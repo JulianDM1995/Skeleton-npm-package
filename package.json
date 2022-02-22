@@ -1,0 +1,26 @@
+{
+  "name": "skeleton-code-generator",
+  "version": "1.0.0",
+  "description": "Automate the process of generating multiple code files easily.",
+  "main": "Skeleton.ts",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/JulianDM1995/Skeleton-npm-package.git"
+  },
+  "keywords": [
+    "Code",
+    "generator",
+    "skeleton"
+  ],
+  "author": "Julian Medina",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/JulianDM1995/Skeleton-npm-package/issues"
+  },
+  "homepage": "https://github.com/JulianDM1995/Skeleton-npm-package#readme",
+  "dependencies": {
+    "@types/node": "^17.0.19",
+    "ts-node": "^10.5.0",
+    "typescript": "^4.5.5"
+  }
+}
