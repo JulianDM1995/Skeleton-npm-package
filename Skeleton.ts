@@ -7,11 +7,35 @@ enum GenerationStrategy {
     TS = "ts"
 }
 
+    /**
+    * Generates all the files replacing all the SKELETON matches. 
+    * @param name File name
+    * @param content File content
+    */
+export interface FileSkeleton {
+    name: string
+    content?: string
+}
+
+    /**
+    * Generates all the files replacing all the SKELETON matches. 
+    * @param name Folder name
+    * @param files Folder files to generate
+    * @param subfolders Subfolders to generate
+    */
+export interface FolderSkeleton {
+    name: string
+    files?: FileSkeleton[]
+    subfolders?: FolderSkeleton[]
+}
+
 export default class Skeleton {
 
     static generationStrategy: GenerationStrategy = GenerationStrategy.JS
     static tempExtention: string = "skltmp"
     static fileExtention: string = "skl"
+    static rootFolderPath = ""
+
     bone: string = ""
     Bone: string = ""
     fileName: string = ""
@@ -43,12 +67,11 @@ export default class Skeleton {
         fs.writeFileSync(path.join(this.filePath, this.fileName), body);
     }
 
-    static rootFolderPath = ""
     /**
     * Generates all the files replacing all the SKELETON matches. 
-    * @param rootFolderPath Path of the folder that will be conver
-    * @param bone Word that will replace all the SKELETON matches
-    * @param params Optional parameters that can be referenced in the .skl.js file
+    * @param rootFolderPath Path of the folder to be generated
+    * @param bone Word that will replace all SKELETON matches
+    * @param params Optional parameters that can be referenced inside .skl.js file
     */
     static generate = (rootFolderPath: string, bone: string, params: any = {}) => {
         Skeleton.rootFolderPath = rootFolderPath;
@@ -62,10 +85,8 @@ export default class Skeleton {
                 console.error("Could not list the directory.", err);
                 process.exit(1);
             }
-
             files.forEach(file => {
                 var filePath = path.join(rootFolderPath, file);
-
                 fs.stat(filePath, (error, stat) => {
                     if (error) {
                         console.error("Error stating file.", error);
@@ -89,8 +110,6 @@ export default class Skeleton {
                             console.log(output);
                         }
                     }
-
-
                     else
                         Skeleton._generate(filePath, bone, params);
                 });
@@ -116,4 +135,66 @@ s.generate(
 
     private static footer: string = `)`
 
+    /**
+    * Generates all the files replacing all the SKELETON matches. 
+    * @param rootFolderPath Path of the folder to be generated
+    * @param folderSkeleton Folder structure and files to generate
+    */
+    static generateFolderSkeleton = (rootFolderPath: string, folderSkeleton: FolderSkeleton) => {
+        console.log(`\n✨ Generating files in : "${rootFolderPath}" \n`)
+        Skeleton._generateFolderSkeleton(rootFolderPath, folderSkeleton, 0, false)
+    }
+
+    static _generateFolderSkeleton = (rootFolderPath: string, folderSkeleton: FolderSkeleton, tabLevel: number, isLastFolder: boolean) => {
+        const { name, files, subfolders: folders } = folderSkeleton
+        const folderPath = path.join(rootFolderPath, folderSkeleton.name);
+
+        let prePrintFolder = ""
+        if (tabLevel !== 0) {
+            if (files) {
+                if (files.length === 0)
+                    prePrintFolder = isLastFolder ? " └─" : " ├─"
+                else
+                    prePrintFolder = " ├─"
+            }
+        }
+
+        console.log(`${prePrintFolder}📂 ${name}`)
+        tabLevel++
+        fs.mkdirSync(folderPath, { recursive: true });
+        if (folders) {
+            folders.forEach((folder, index) => {
+                Skeleton._generateFolderSkeleton(folderPath, folder, tabLevel, index === folders.length - 1)
+            })
+        }
+        if (files) {
+            files.forEach((file, index) => {
+                console.log(`${" │ ".repeat(tabLevel - 1)} ${index === files.length - 1 ? "└" : "├"}─📄 ${file.name}`)
+                fs.writeFileSync(path.join(folderPath, file.name), file.content || "No content");
+            })
+        }
+
+    }
 }
+
+// Created by: 
+//
+//         ___       _ _     _             
+//        |_  |     | (_)   |/             
+//          | |_   _| |_  __ _ _ __      
+//          | | | | | | |/ _` | '_ \     
+//      /\__/ / |_| | | | (_| | | | |    
+//      \____/ \__,_|_|_|\__,_|_| |_|    
+//                                       
+//                                       
+//      ___  ___         _ _             
+//      |  \/  |        | (_)            
+//      | .  . | ___  __| |_ _ __   __ _ 
+//      | |\/| |/ _ \/ _` | | '_ \ / _` |
+//      | |  | |  __/ (_| | | | | | (_| |
+//      \_|  |_/\___|\__,_|_|_| |_|\__,_|
+//                                 
+//                                 
+// JulianDM1995@gmail.com
+// 23/02/22
+                                 
