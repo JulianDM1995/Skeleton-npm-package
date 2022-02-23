@@ -2,7 +2,7 @@
   "name": "skeleton-code-generator",
   "version": "1.0.0",
   "description": "Automate the process of generating multiple code files easily.",
-  "main": "Skeleton.ts",
+  "main": "Skeleton.js",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/JulianDM1995/Skeleton-npm-package.git"

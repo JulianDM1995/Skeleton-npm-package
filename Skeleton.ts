@@ -2,8 +2,16 @@ import { execSync } from "child_process";
 import * as fs from "fs";
 import * as path from "path";
 
-export class Skeleton {
+enum GenerationStrategy {
+    JS = "js",
+    TS = "ts"
+}
 
+export default class Skeleton {
+
+    static generationStrategy: GenerationStrategy = GenerationStrategy.JS
+    static tempExtention: string = "skltmp"
+    static fileExtention: string = "skl"
     bone: string = ""
     Bone: string = ""
     fileName: string = ""
@@ -14,7 +22,7 @@ export class Skeleton {
         const folderName = path.basename(folderPath);
         this.bone = bone
         this.Bone = this.bone.charAt(0).toUpperCase() + this.bone.slice(1)
-        this.fileName = fileName.replace("SKELETON", this.Bone).replace(/.skltmp.ts/ig, '');
+        this.fileName = fileName.replace("SKELETON", this.Bone).replace(`.${Skeleton.tempExtention}.${Skeleton.generationStrategy}`, '');
         this.filePath = filePath.replace("SKELETON", `${this.bone}`).replace(folderName, `dist_${folderName}`)
         this.params = JSON.parse(params)
     }
@@ -30,52 +38,68 @@ export class Skeleton {
     }
 
     private _generate = (body: string): void => {
-        console.error(`Generating "${this.fileName}" at "${this.filePath}"`)
+        console.error(`\t-> Generating "${this.fileName}" at "${this.filePath}"`)
         fs.mkdirSync(this.filePath, { recursive: true });
         fs.writeFileSync(path.join(this.filePath, this.fileName), body);
     }
 
     static rootFolderPath = ""
-    static generate = (rootFolderPath: string, meet: string, params: any = {}) => {
+    /**
+    * Generates all the files replacing all the SKELETON matches. 
+    * @param rootFolderPath Path of the folder that will be conver
+    * @param bone Word that will replace all the SKELETON matches
+    * @param params Optional parameters that can be referenced in the .skl.js file
+    */
+    static generate = (rootFolderPath: string, bone: string, params: any = {}) => {
         Skeleton.rootFolderPath = rootFolderPath;
-        Skeleton._generate(rootFolderPath, meet, JSON.stringify(params).replace(/"/g, '\\"'))
+        Skeleton._generate(rootFolderPath, bone, JSON.stringify(params).replace(/"/g, '\\"'))
     }
 
-    private static _generate = (rootFolderPath: string, meet: string, params: string) => {
+    private static _generate = (rootFolderPath: string, bone: string, params: string) => {
+        console.log(`Generating files for "${bone}" at "${rootFolderPath}"`)
         fs.readdir(rootFolderPath, (err, files) => {
             if (err) {
                 console.error("Could not list the directory.", err);
                 process.exit(1);
             }
 
-            files.forEach(function (file, index) {
+            files.forEach(file => {
                 var filePath = path.join(rootFolderPath, file);
 
-                fs.stat(filePath, function (error, stat) {
-
+                fs.stat(filePath, (error, stat) => {
                     if (error) {
                         console.error("Error stating file.", error);
                         return;
                     }
-
                     if (stat.isFile()) {
                         if (filePath.endsWith("skl.js")) {
-                            const tempFileName = filePath.replace(".skl.js", ".skltmp.ts")
-                            fs.writeFileSync(tempFileName, `${Skeleton.headerTS}${fs.readFileSync(filePath, 'utf8')}${Skeleton.footer}`);
-                            const output = execSync(`ts-node ${tempFileName} ${meet} ${Skeleton.rootFolderPath} ${params} `, { encoding: 'utf-8' });
-                            fs.unlinkSync(tempFileName)
-                            console.log(output)
+                            let header = "";
+                            let executer = "";
+                            if (Skeleton.generationStrategy === GenerationStrategy.TS) {
+                                header = Skeleton.headerTS;
+                                executer = "ts-node";
+                            } else {
+                                header = Skeleton.headerJS;
+                                executer = "node";
+                            }
+                            const tempFileName = filePath.replace(".skl.js", `.${Skeleton.tempExtention}.${Skeleton.generationStrategy}`);
+                            fs.writeFileSync(tempFileName, `${header}${fs.readFileSync(filePath, 'utf8')}${Skeleton.footer}`);
+                            const output = execSync(`${executer} ${tempFileName} ${bone} ${Skeleton.rootFolderPath} ${params} `, { encoding: 'utf-8' });
+                            fs.unlinkSync(tempFileName);
+                            console.log(output);
                         }
                     }
+
+
                     else
-                        Skeleton._generate(filePath, meet, params);
+                        Skeleton._generate(filePath, bone, params);
                 });
             });
         });
     }
 
-    private static headerTS: string = 
-`import * as path from "path";
+    private static headerTS: string =
+        `import * as path from "path";
 import Skeleton from "skeleton-code-generator";
 
 const s = new Skeleton(process.argv[2], path.basename(__filename), path.dirname(__filename), process.argv[3]);
@@ -83,15 +107,13 @@ s.generate(
 `
 
     private static headerJS: string = `"use strict";
-    exports.__esModule = true;
-    var path = require("path");
-    var skeleton = require("skeleton-code-generator");
-    var s = new skeleton.Skeleton(process.argv[2], path["default"].basename(__filename), path["default"].dirname(__filename), process.argv[3]);
-    s.generate(
+exports.__esModule = true;
+var path = require("path");
+var skeleton_code_generator_1 = require("skeleton-code-generator");
+var s = new skeleton_code_generator_1(process.argv[2], path.basename(__filename), path.dirname(__filename), process.argv[3]);
+s.generate(
     `
 
     private static footer: string = `)`
 
 }
-
-export default Skeleton
