@@ -1,6 +1,6 @@
 {
   "name": "skeleton-code-generator",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Automate the process of generating multiple code files easily.",
   "main": "Skeleton.js",
   "repository": {
