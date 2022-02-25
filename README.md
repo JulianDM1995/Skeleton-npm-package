@@ -8,9 +8,6 @@
   <a href="https://github.com/JulianDM1995/Skeleton-npm-package/graphs/commit-activity" target="_blank">
     <img alt="Maintenance" src="https://img.shields.io/badge/Maintained%3F-yes-green.svg" />
   </a>
-  <a href="https://github.com/JulianDM1995/Skeleton-npm-package/blob/master/LICENSE" target="_blank">
-    <img alt="License: ISC" src="https://img.shields.io/github/license/JulianDM1995/skeleton-code-generator" />
-  </a>
 </p>
 
 <p>
@@ -81,7 +78,7 @@ Skeleton.generateFromJSON(folderToGenerate, folderSkeleton)
 
 <p>
   <a href="https://github.com/JulianDM1995" target="_blank">
-    <img alt="Version" src="https://github.com/JulianDM1995/Skeleton-npm-package/blob/main/designs/design03.svg">
+    <img alt="Version" src="https://github.com/JulianDM1995/Skeleton-npm-package/blob/main/designs/design01.svg">
   </a>
 </p>
 
