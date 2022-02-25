@@ -35,7 +35,7 @@ Installation is done using the
 ```bash
 $ npm install skeleton-code-generator
 ```
-## Import module
+## Module importation
 ### Javascript:
 ```js
 //Importation
@@ -58,23 +58,23 @@ Skeleton.generateFromJSON(folderToGenerate, folderSkeleton)
 ## Main Methods
 ### generateFromFolder
 
-<p>
-  <a href="https://github.com/JulianDM1995" target="_blank">
-    <img alt="Version" src="https://github.com/JulianDM1995/Skeleton-npm-package/blob/main/designs/design02.svg">
-  </a>
-</p>
-
 - Generates all the files, folders and subfolders defined at "folderPath". 
 - The word SKELETON in folder and file names will be replaced by "bone" parameter.
 - Files inside "folderPath" that matchs the extension **\*SKL.JS** will be generated, replacing the content inside.
 - A new folder named "**dist_FOLDERNAME**" will be created at the same height of "**FOLDERNAME**".
 - All generated files will be inside "**dist_FOLDERNAME**" folder, preserving the original structure.
 
-| Parameter | Type | Description |
-| ------------ | ------------ |
-| folderPath | string | Path of the root folder to be generated |
-| bone | string | Word that will replace SKELETON matches |
-| params | any | Optional parameters that can be referenced inside .skl.js files. |
+<p>
+  <a href="https://github.com/JulianDM1995" target="_blank">
+    <img alt="Version" src="https://github.com/JulianDM1995/Skeleton-npm-package/blob/main/designs/design02.svg">
+  </a>
+</p>
+
+ | Parameter | Type | Description |
+ | ------------ | ------------ |
+ | folderPath | string | Path of the root folder to be generated |
+ | bone | string | Word that will replace SKELETON matches |
+ | params | any | Optional parameters that can be referenced inside .skl.js files. |
 
 ### generateFromJSON
 
