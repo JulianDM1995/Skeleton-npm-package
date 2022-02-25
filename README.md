@@ -88,3 +88,22 @@ Generates all the files, folders and subfolders defined at "folderJSON" object i
 | --------------- | --------------- | --------------- |
 | generationPath | string | Path of the folder to be generated |
 | folderJSON | FolderSkeleton | Folder, subfolders and files to generate |
+
+#### Interfaces
+##### FileSkeleton
+
+Generates all the files, folders and subfolders defined at "folderJSON" object inside "generationPath" folder.
+
+| Parameter | Type | Description |
+| --------------- | --------------- | --------------- |
+| generationPath | string | Path of the folder to be generated |
+| folderJSON | FolderSkeleton | Folder, subfolders and files to generate |
+
+##### FolderSkeleton
+
+Generates all the files, folders and subfolders defined at "folderJSON" object inside "generationPath" folder.
+
+| Parameter | Type | Description |
+| --------------- | --------------- | --------------- |
+| generationPath | string | Path of the folder to be generated |
+| folderJSON | FolderSkeleton | Folder, subfolders and files to generate |
