@@ -1,1 +1,0 @@
-xcopy "./.vscode/skl-icons" "%USERPROFILE%/.vscode/extensions/skl-icons" /E & code & code %appdata%/code/user/settings.json
