@@ -70,6 +70,7 @@ Skeleton.generateFromJSON(folderToGenerate, folderSkeleton)
   </a>
 </p>
 
+
  |  Parameter | Type | Description |
  |  ------------ | ------------ |
  |  folderPath | string | Path of the root folder to be generated |
