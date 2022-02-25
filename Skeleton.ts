@@ -18,7 +18,7 @@ export interface FileSkeleton {
 }
 
 /**
-* JSON definition of a folder file. 
+* JSON definition of a folder. 
 * @param name Folder name
 * @param files Folder files
 * @param subfolders Subfolders
