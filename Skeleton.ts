@@ -1,6 +1,7 @@
 import { execSync } from "child_process";
 import * as fs from "fs";
 import * as path from "path";
+import { AsciiTree } from "oo-ascii-tree";
 
 enum GenerationStrategy {
     JS = "js",
@@ -38,6 +39,7 @@ export default class Skeleton {
     private fileName: string = ""
     private filePath: string = ""
     private params: any = {}
+    private static tree: AsciiTree;
 
     constructor(bone: string, fileName: string, filePath: string, folderPath: string, params: string) {
         const folderName = path.basename(folderPath);
@@ -151,30 +153,34 @@ s.generateFromFolder(
     */
     private static sparklesIcon = "✨"
     static generateFromJSON = (generationPath: string, folderJSON: FolderSkeleton) => {
-        console.log(generationPath)
         console.log(`\n${Skeleton.sparklesIcon} Generating files in : "${generationPath}" \n`)
-        Skeleton._generateFromJSON(generationPath, folderJSON)
+        Skeleton.tree = Skeleton._generateFromJSON(generationPath, folderJSON)
+        Skeleton.tree.printTree();
+        console.log("\n")
     }
 
     private static folderIcon = "📂"
     private static fileIcon = "📄"
-    private static _generateFromJSON = (rootFolderPath: string, folderSkeleton: FolderSkeleton, x: number = 0) => {
+    private static _generateFromJSON = (rootFolderPath: string, folderSkeleton: FolderSkeleton): AsciiTree => {
         const { name, files, subfolders: folders } = folderSkeleton
-        const folderPath = path.join(rootFolderPath, folderSkeleton.name);
-        console.log(`${"   ".repeat(x)}${Skeleton.folderIcon} ${name}`)
-        x++;
+        const folderPath = path.join(rootFolderPath, name);
+
+        let tree = new AsciiTree(`${this.folderIcon} ${folderSkeleton.name}`);
+
         fs.mkdirSync(folderPath, { recursive: true });
         if (folders) {
-            folders.forEach((folder, index) => {
-                Skeleton._generateFromJSON(folderPath, folder, x)
+            folders.forEach(folder => {
+                tree.add(Skeleton._generateFromJSON(folderPath, folder))
             })
         }
         if (files) {
-            files.forEach((file, index) => {
-                console.log(`${"   ".repeat(x)}${Skeleton.fileIcon} ${file.name}`)
+            files.forEach(file => {
+                tree.add(new AsciiTree(`${this.fileIcon} ${file.name}`))
                 fs.writeFileSync(path.join(folderPath, file.name), file.content || "No content");
             })
         }
+
+        return tree;
     }
 
 }

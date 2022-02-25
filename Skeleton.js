@@ -14,6 +14,7 @@ exports.__esModule = true;
 var child_process_1 = require("child_process");
 var fs = require("fs");
 var path = require("path");
+var oo_ascii_tree_1 = require("oo-ascii-tree");
 var GenerationStrategy;
 (function (GenerationStrategy) {
     GenerationStrategy["JS"] = "js";
@@ -42,6 +43,8 @@ var Skeleton = /** @class */ (function () {
         var extension = _fileName.pop();
         this.params = __assign(__assign({}, this.params), { bone: bone, Bone: Bone, fileName: _fileName.join(""), fileExtension: extension, filePath: this.filePath });
     }
+    var _a;
+    _a = Skeleton;
     Skeleton.generationStrategy = GenerationStrategy.JS;
     Skeleton.tempExtention = "skltmp";
     Skeleton.fileExtention = "skl";
@@ -111,30 +114,30 @@ var Skeleton = /** @class */ (function () {
     */
     Skeleton.sparklesIcon = "✨";
     Skeleton.generateFromJSON = function (generationPath, folderJSON) {
-        console.log(generationPath);
         console.log("\n" + Skeleton.sparklesIcon + " Generating files in : \"" + generationPath + "\" \n");
-        Skeleton._generateFromJSON(generationPath, folderJSON);
+        Skeleton.tree = Skeleton._generateFromJSON(generationPath, folderJSON);
+        Skeleton.tree.printTree();
+        console.log("\n");
     };
     Skeleton.folderIcon = "📂";
     Skeleton.fileIcon = "📄";
-    Skeleton._generateFromJSON = function (rootFolderPath, folderSkeleton, x) {
-        if (x === void 0) { x = 0; }
+    Skeleton._generateFromJSON = function (rootFolderPath, folderSkeleton) {
         var name = folderSkeleton.name, files = folderSkeleton.files, folders = folderSkeleton.subfolders;
-        var folderPath = path.join(rootFolderPath, folderSkeleton.name);
-        console.log("" + "   ".repeat(x) + Skeleton.folderIcon + " " + name);
-        x++;
+        var folderPath = path.join(rootFolderPath, name);
+        var tree = new oo_ascii_tree_1.AsciiTree(_a.folderIcon + " " + folderSkeleton.name);
         fs.mkdirSync(folderPath, { recursive: true });
         if (folders) {
-            folders.forEach(function (folder, index) {
-                Skeleton._generateFromJSON(folderPath, folder, x);
+            folders.forEach(function (folder) {
+                tree.add(Skeleton._generateFromJSON(folderPath, folder));
             });
         }
         if (files) {
-            files.forEach(function (file, index) {
-                console.log("" + "   ".repeat(x) + Skeleton.fileIcon + " " + file.name);
+            files.forEach(function (file) {
+                tree.add(new oo_ascii_tree_1.AsciiTree(_a.fileIcon + " " + file.name));
                 fs.writeFileSync(path.join(folderPath, file.name), file.content || "No content");
             });
         }
+        return tree;
     };
     return Skeleton;
 }());
