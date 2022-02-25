@@ -35,8 +35,8 @@ Installation is done using the
 ```bash
 $ npm install skeleton-code-generator
 ```
-##Import module
-###Javascript:
+## Import module
+### Javascript:
 ```js
 //Importation
 var Skeleton = require("skeleton-code-generator");
@@ -45,7 +45,7 @@ var Skeleton = require("skeleton-code-generator");
 Skeleton.generateFromFolder(folderToGenerate, boneWord, params)
 Skeleton.generateFromJSON(folderToGenerate, folderSkeleton)
 ```
-###Typescript:
+### Typescript:
 ```js
 //Importation
 import Skeleton, { FolderSkeleton } from "skeleton-code-generator";
@@ -55,8 +55,8 @@ Skeleton.generateFromFolder(folderToGenerate, boneWord, params)
 Skeleton.generateFromJSON(folderToGenerate, folderSkeleton)
 ```
 
-##Main Methods
-###generateFromFolder
+## Main Methods
+### generateFromFolder
 
 <p>
   <a href="https://github.com/JulianDM1995" target="_blank">
@@ -76,7 +76,7 @@ Skeleton.generateFromJSON(folderToGenerate, folderSkeleton)
 | bone | string | Word that will replace SKELETON matches |
 | params | any | Optional parameters that can be referenced inside .skl.js files. |
 
-###generateFromJSON
+### generateFromJSON
 
 <p>
   <a href="https://github.com/JulianDM1995" target="_blank">
