@@ -89,8 +89,8 @@ Generates all the files, folders and subfolders defined at "folderJSON" object i
 | generationPath | string | Path of the folder to be generated |
 | folderJSON | FolderSkeleton | Folder, subfolders and files to generate |
 
-### Interfaces
-#### FileSkeleton
+## Interfaces
+### FileSkeleton
 
 JSON definition of a text-based file. 
 
@@ -99,12 +99,21 @@ JSON definition of a text-based file.
 | name | string | File name |
 | content | string | File content |
 
-#### FolderSkeleton
+### FolderSkeleton
 
 JSON definition of a folder. 
 
 | Parameter | Type | Description |
 | --------------- | --------------- | --------------- |
-| name | string | name Folder name |
-| files | FileSkeleton[] | files Folder files |
-| subfolders | FolderSkeleton[] | subfolders Subfolders |
+| name | string | Folder name |
+| files | FileSkeleton[] | Folder files |
+| subfolders | FolderSkeleton[] | Subfolders |
+
+### Examples:
+
+You can find all the examples for JS and TS in `./examples` folder. 
+
+
+### Icons:
+
+To install the icon pack open `./icons/SetIcons.bat` and follow the instructions shown in the console.
