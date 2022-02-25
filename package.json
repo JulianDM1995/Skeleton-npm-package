@@ -1,16 +1,23 @@
 {
   "name": "skeleton-code-generator",
   "version": "1.0.2",
-  "description": "Automate the process of generating multiple code files easily.",
+  "description": "The most powerfull node-based code generator! Automate the process of generating multiple code files and folder structures fast, efficient and easy. You can use a JSON object or a pre-defined folder structure as parameter for code generation",
   "main": "Skeleton.js",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/JulianDM1995/Skeleton-npm-package.git"
   },
   "keywords": [
-    "Code",
+    "code",
     "generator",
-    "skeleton"
+    "generation",
+    "skeleton",
+    "json",
+    "folder",
+    "fast",
+    "automate",
+    ".skl.js",
+    ".skl"
   ],
   "author": "Julian Medina",
   "license": "ISC",
