@@ -1,16 +1,7 @@
 <h1 align="center">Welcome to skeleton-code-generator 👋</h1>
 <p>
-  <a href="https://www.npmjs.com/package/skeleton-code-generator" target="_blank">
-    <img alt="Version" src="https://img.shields.io/npm/v/skeleton-code-generator.svg">
-  </a>
-  <a href="https://github.com/JulianDM1995/Skeleton-npm-package#readme" target="_blank">
-    <img alt="Documentation" src="https://img.shields.io/badge/documentation-yes-brightgreen.svg" />
-  </a>
-  <a href="https://github.com/JulianDM1995/Skeleton-npm-package/graphs/commit-activity" target="_blank">
-    <img alt="Maintenance" src="https://img.shields.io/badge/Maintained%3F-yes-green.svg" />
-  </a>
-  <a href="https://github.com/JulianDM1995/Skeleton-npm-package/blob/master/LICENSE" target="_blank">
-    <img alt="License: ISC" src="https://img.shields.io/github/license/JulianDM1995/skeleton-code-generator" />
+  <a href="https://github.com/JulianDM1995" target="_blank">
+    <img alt="Version" src="https://github.com/JulianDM1995/Skeleton-npm-package/blob/main/designs/design03.svg">
   </a>
 </p>
 
