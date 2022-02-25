@@ -11,6 +11,6 @@
     "test": "node src/index.js"
   },
   "keywords": [],
-  "author": "",
+  "author": "Julián Medina",
   "license": "ISC"
 }

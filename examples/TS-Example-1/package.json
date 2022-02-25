@@ -7,7 +7,7 @@
     "test": "ts-node src/index.ts"
   },
   "keywords": [],
-  "author": "",
+  "author": "Julián Medina",
   "license": "ISC",
   "dependencies": {
     "@types/node": "^17.0.21",

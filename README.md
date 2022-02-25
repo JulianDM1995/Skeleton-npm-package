@@ -112,10 +112,10 @@ JSON definition of a folder.
 ### Examples:
 
 You can find all the examples for JS and TS in `./examples` folder.
-To run an example, run the commands: 
-- [`npm install`]
-- [`npm install skeleton-code-generator`]
-- [`yarn test`]
+To run an example, run the following commands: 
+- `npm install`
+- `npm install skeleton-code-generator`
+- `yarn test`
 
 ### Icons:
 
