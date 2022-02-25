@@ -71,11 +71,11 @@ Skeleton.generateFromJSON(folderToGenerate, folderSkeleton)
 </p>
 
 
-| Column 1 Header | Column 2 Header | Column 3 Header |
+| Parameter | Type | Description |
 | --------------- | --------------- | --------------- |
-| Row 1 Column 1 | Row 1 Column 2 | Row 1 Column 3 |
-| Row 2 Column 1 | Row 2 Column 2 | Row 2 Column 3 |
-| Row 3 Column 1 | Row 3 Column 2 | Row 3 Column 3 |
+| folderPath | string | Path of the root folder to be generated |
+| bone | string | Word that will replace SKELETON matches |
+| params | any | Optional parameters that can be referenced inside .skl.js files |
 
 ### generateFromJSON
 
