@@ -12,7 +12,7 @@
 
 <p>
   <a href="https://github.com/JulianDM1995" target="_blank">
-    <img alt="Version" src="https://github.com/JulianDM1995/Skeleton-npm-package/blob/main/designs/design03.svg">
+    <img alt="Version" src="https://github.com/JulianDM1995/Skeleton-npm-package/blob/main/designs/design_3.svg">
   </a>
 </p>
 
@@ -57,7 +57,7 @@ Skeleton.generateFromJSON(folderToGenerate, folderSkeleton)
 
 <p>
   <a href="https://github.com/JulianDM1995" target="_blank">
-    <img alt="Version" src="https://github.com/JulianDM1995/Skeleton-npm-package/blob/main/designs/design02.svg">
+    <img alt="Version" src="https://github.com/JulianDM1995/Skeleton-npm-package/blob/main/designs/design_2.svg">
   </a>
 </p>
 
@@ -78,7 +78,7 @@ Skeleton.generateFromJSON(folderToGenerate, folderSkeleton)
 
 <p>
   <a href="https://github.com/JulianDM1995" target="_blank">
-    <img alt="Version" src="https://github.com/JulianDM1995/Skeleton-npm-package/blob/main/designs/design01.svg">
+    <img alt="Version" src="https://github.com/JulianDM1995/Skeleton-npm-package/blob/main/designs/design_1.svg">
   </a>
 </p>
 
