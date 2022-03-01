@@ -175,12 +175,53 @@ s.generateFromFolder(
         }
         if (files) {
             files.forEach(file => {
-                tree.add(new AsciiTree(`${this.fileIcon} ${file.name}`))
-                fs.writeFileSync(path.join(folderPath, file.name), file.content || "No content");
+                if(file.name.startsWith("/") || file.name.startsWith("\\")) file.name = file.name.slice(1)
+                file.name = file.name.replace("/","\\")
+                if (file.name.split("\\").length > 1) {
+                    const folder = Skeleton.generateSubfolderSkeleton(file)
+                    tree.add(Skeleton._generateFromJSON(folderPath, folder))
+                }
+                else {
+                    tree.add(new AsciiTree(`${this.fileIcon} ${file.name}`))
+                    fs.writeFileSync(path.join(folderPath, file.name), file.content || "No content");
+                }
             })
         }
 
         return tree;
+    }
+
+    private static generateSubfolderSkeleton = (file: FileSkeleton): FolderSkeleton => {
+
+        const names = file.name.split("\\")
+        const fileName = names.pop() || ""
+        const folderName = path.join(...names)
+
+        let fileFolder: FolderSkeleton = {
+            name: folderName,
+            files: [{
+                name: fileName,
+                content: file.content
+            }]
+
+        }
+
+        while (fileFolder.name.split("\\").length > 1) {
+            const folderNames = fileFolder.name.split("\\")
+            const subfolderName = folderNames.pop() || ""
+            const folderName = path.join(...folderNames)
+            fileFolder = {
+                name: folderName,
+                subfolders: [{
+                    name: subfolderName,
+                    files: fileFolder.files,
+                    subfolders: fileFolder.subfolders
+                }]
+            }
+
+        }
+        return fileFolder
+
     }
 
 }

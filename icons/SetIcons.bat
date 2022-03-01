@@ -15,6 +15,10 @@ echo        "*.SKL.js": "../../skl-icons/SKL",
 echo        "*.SKLTMP.ts": "../../skl-icons/SKL-tmp",
 echo        "Skeleton.ts": "../../skl-icons/SKL-classTS",
 echo        "Skeleton.js": "../../skl-icons/SKL-classJS"
+echo    }
+echo    "material-icon-theme.folders.associations": {
+echo        "codegenerator": "../../../../skl-icons/SKL-folder",
+echo        "code_generator": "../../../../skl-icons/SKL-folder"
 echo    }%NL%%NL% 
 
 xcopy "./skl-icons" "%USERPROFILE%/.vscode/extensions/skl-icons" /E & code & code %appdata%/code/user/settings.json & pause

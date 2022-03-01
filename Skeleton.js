@@ -133,11 +133,46 @@ var Skeleton = /** @class */ (function () {
         }
         if (files) {
             files.forEach(function (file) {
-                tree.add(new oo_ascii_tree_1.AsciiTree(_a.fileIcon + " " + file.name));
-                fs.writeFileSync(path.join(folderPath, file.name), file.content || "No content");
+                if (file.name.startsWith("/") || file.name.startsWith("\\"))
+                    file.name = file.name.slice(1);
+                file.name = file.name.replace("/", "\\");
+                if (file.name.split("\\").length > 1) {
+                    var folder = Skeleton.generateSubfolderSkeleton(file);
+                    tree.add(Skeleton._generateFromJSON(folderPath, folder));
+                }
+                else {
+                    tree.add(new oo_ascii_tree_1.AsciiTree(_a.fileIcon + " " + file.name));
+                    fs.writeFileSync(path.join(folderPath, file.name), file.content || "No content");
+                }
             });
         }
         return tree;
+    };
+    Skeleton.generateSubfolderSkeleton = function (file) {
+        var names = file.name.split("\\");
+        var fileName = names.pop() || "";
+        var folderName = path.join.apply(path, names);
+        var fileFolder = {
+            name: folderName,
+            files: [{
+                    name: fileName,
+                    content: file.content
+                }]
+        };
+        while (fileFolder.name.split("\\").length > 1) {
+            var folderNames = fileFolder.name.split("\\");
+            var subfolderName = folderNames.pop() || "";
+            var folderName_1 = path.join.apply(path, folderNames);
+            fileFolder = {
+                name: folderName_1,
+                subfolders: [{
+                        name: subfolderName,
+                        files: fileFolder.files,
+                        subfolders: fileFolder.subfolders
+                    }]
+            };
+        }
+        return fileFolder;
     };
     return Skeleton;
 }());
