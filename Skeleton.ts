@@ -43,10 +43,10 @@ export default class Skeleton {
 
     constructor(bone: string, fileName: string, filePath: string, folderPath: string, params: string) {
         const folderName = path.basename(folderPath);
-
         let Bone = bone.charAt(0).toUpperCase() + bone.slice(1)
         this.fileName = fileName.replace("SKELETON", Bone).replace(`.${Skeleton.tempExtention}.${Skeleton.generationStrategy}`, '');
         this.filePath = filePath.replace("SKELETON", `${bone}`).replace(folderName, `dist_${folderName}`)
+        params = params.replace(/\\"/g, '"');
         this.params = JSON.parse(params)
         let _fileName = this.fileName.split(".")
         let extension = _fileName.pop();
@@ -86,7 +86,8 @@ export default class Skeleton {
     static generateFromFolder = (folderPath: string, bone: string, params: any = {}) => {
         console.log(`\n${Skeleton.sparklesIcon} Generating files for "${bone}" at "${folderPath}"\n`)
         Skeleton.folderPath = folderPath;
-        Skeleton._generateFromFolder(folderPath, bone, JSON.stringify(params).replace(/"/g, '\\"'))
+        const paramsString = JSON.stringify(params).replace(/"/g, '\\"');
+        Skeleton._generateFromFolder(folderPath, bone, `'${paramsString}'`)
     }
 
     private static _generateFromFolder = (rootFolderPath: string, bone: string, params: string) => {
