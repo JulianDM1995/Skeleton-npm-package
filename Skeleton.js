@@ -30,14 +30,15 @@ var Skeleton = /** @class */ (function () {
             _this._generateFromFolder(generateCallbackfn(_this.params));
         };
         this._generateFromFolder = function (body) {
-            console.log("\t " + Skeleton.folderIcon + " " + _this.filePath + "\n\t  \u2514\u2500" + Skeleton.fileIcon + " " + _this.fileName);
+            console.log("\t ".concat(Skeleton.folderIcon, " ").concat(_this.filePath, "\n\t  \u2514\u2500").concat(Skeleton.fileIcon, " ").concat(_this.fileName));
             fs.mkdirSync(_this.filePath, { recursive: true });
             fs.writeFileSync(path.join(_this.filePath, _this.fileName), body);
         };
         var folderName = path.basename(folderPath);
         var Bone = bone.charAt(0).toUpperCase() + bone.slice(1);
-        this.fileName = fileName.replace("SKELETON", Bone).replace("." + Skeleton.tempExtention + "." + Skeleton.generationStrategy, '');
-        this.filePath = filePath.replace("SKELETON", "" + bone).replace(folderName, "dist_" + folderName);
+        this.fileName = fileName.replace("SKELETON", Bone).replace(".".concat(Skeleton.tempExtention, ".").concat(Skeleton.generationStrategy), '');
+        this.filePath = filePath.replace("SKELETON", "".concat(bone)).replace(folderName, "dist_".concat(folderName));
+        params = params.replace(/\\"/g, '"');
         this.params = JSON.parse(params);
         var _fileName = this.fileName.split(".");
         var extension = _fileName.pop();
@@ -61,9 +62,10 @@ var Skeleton = /** @class */ (function () {
     */
     Skeleton.generateFromFolder = function (folderPath, bone, params) {
         if (params === void 0) { params = {}; }
-        console.log("\n" + Skeleton.sparklesIcon + " Generating files for \"" + bone + "\" at \"" + folderPath + "\"\n");
+        console.log("\n".concat(Skeleton.sparklesIcon, " Generating files for \"").concat(bone, "\" at \"").concat(folderPath, "\"\n"));
         Skeleton.folderPath = folderPath;
-        Skeleton._generateFromFolder(folderPath, bone, JSON.stringify(params).replace(/"/g, '\\"'));
+        var paramsString = JSON.stringify(params).replace(/"/g, '\\"');
+        Skeleton._generateFromFolder(folderPath, bone, "'".concat(paramsString, "'"));
     };
     Skeleton._generateFromFolder = function (rootFolderPath, bone, params) {
         fs.readdir(rootFolderPath, function (err, files) {
@@ -79,7 +81,7 @@ var Skeleton = /** @class */ (function () {
                         return;
                     }
                     if (stat.isFile()) {
-                        if (filePath.endsWith(Skeleton.fileExtention + ".js")) {
+                        if (filePath.endsWith("".concat(Skeleton.fileExtention, ".js"))) {
                             var header = "";
                             var executer = "";
                             if (Skeleton.generationStrategy === GenerationStrategy.TS) {
@@ -90,9 +92,9 @@ var Skeleton = /** @class */ (function () {
                                 header = Skeleton.headerJS;
                                 executer = "node";
                             }
-                            var tempFileName = filePath.replace("." + Skeleton.fileExtention + ".js", "." + Skeleton.tempExtention + "." + Skeleton.generationStrategy);
-                            fs.writeFileSync(tempFileName, "" + header + fs.readFileSync(filePath, 'utf8') + Skeleton.footer);
-                            var command = executer + " " + tempFileName + " " + bone + " " + Skeleton.folderPath + " " + params + " ";
+                            var tempFileName = filePath.replace(".".concat(Skeleton.fileExtention, ".js"), ".".concat(Skeleton.tempExtention, ".").concat(Skeleton.generationStrategy));
+                            fs.writeFileSync(tempFileName, "".concat(header).concat(fs.readFileSync(filePath, 'utf8')).concat(Skeleton.footer));
+                            var command = "".concat(executer, " ").concat(tempFileName, " ").concat(bone, " ").concat(Skeleton.folderPath, " ").concat(params, " ");
                             var output = (0, child_process_1.execSync)(command, { encoding: 'utf-8' });
                             fs.unlinkSync(tempFileName);
                             console.log(output);
@@ -114,7 +116,7 @@ var Skeleton = /** @class */ (function () {
     */
     Skeleton.sparklesIcon = "✨";
     Skeleton.generateFromJSON = function (generationPath, folderJSON) {
-        console.log("\n" + Skeleton.sparklesIcon + " Generating files in : \"" + generationPath + "\" \n");
+        console.log("\n".concat(Skeleton.sparklesIcon, " Generating files in : \"").concat(generationPath, "\" \n"));
         Skeleton.tree = Skeleton._generateFromJSON(generationPath, folderJSON);
         Skeleton.tree.printTree();
         console.log("\n");
@@ -124,7 +126,7 @@ var Skeleton = /** @class */ (function () {
     Skeleton._generateFromJSON = function (rootFolderPath, folderSkeleton) {
         var name = folderSkeleton.name, files = folderSkeleton.files, folders = folderSkeleton.subfolders;
         var folderPath = path.join(rootFolderPath, name);
-        var tree = new oo_ascii_tree_1.AsciiTree(_a.folderIcon + " " + folderSkeleton.name);
+        var tree = new oo_ascii_tree_1.AsciiTree("".concat(_a.folderIcon, " ").concat(folderSkeleton.name));
         fs.mkdirSync(folderPath, { recursive: true });
         if (folders) {
             folders.forEach(function (folder) {
@@ -141,7 +143,7 @@ var Skeleton = /** @class */ (function () {
                     tree.add(Skeleton._generateFromJSON(folderPath, folder));
                 }
                 else {
-                    tree.add(new oo_ascii_tree_1.AsciiTree(_a.fileIcon + " " + file.name));
+                    tree.add(new oo_ascii_tree_1.AsciiTree("".concat(_a.fileIcon, " ").concat(file.name)));
                     fs.writeFileSync(path.join(folderPath, file.name), file.content || "No content");
                 }
             });
