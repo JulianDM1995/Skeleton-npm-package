@@ -11,178 +11,121 @@ var __assign = (this && this.__assign) || function () {
     return __assign.apply(this, arguments);
 };
 exports.__esModule = true;
-var child_process_1 = require("child_process");
-var fs = require("fs");
 var path = require("path");
-var oo_ascii_tree_1 = require("oo-ascii-tree");
-var GenerationStrategy;
-(function (GenerationStrategy) {
-    GenerationStrategy["JS"] = "js";
-    GenerationStrategy["TS"] = "ts";
-})(GenerationStrategy || (GenerationStrategy = {}));
-var Skeleton = /** @class */ (function () {
-    function Skeleton(bone, fileName, filePath, folderPath, params) {
-        var _this = this;
-        this.fileName = "";
-        this.filePath = "";
-        this.params = {};
-        this.generateFromFolder = function (generateCallbackfn) {
-            _this._generateFromFolder(generateCallbackfn(_this.params));
-        };
-        this._generateFromFolder = function (body) {
-            console.log("\t ".concat(Skeleton.folderIcon, " ").concat(_this.filePath, "\n\t  \u2514\u2500").concat(Skeleton.fileIcon, " ").concat(_this.fileName));
-            fs.mkdirSync(_this.filePath, { recursive: true });
-            fs.writeFileSync(path.join(_this.filePath, _this.fileName), body);
-        };
-        var folderName = path.basename(folderPath);
-        var Bone = bone.charAt(0).toUpperCase() + bone.slice(1);
-        this.fileName = fileName.replace("SKELETON", Bone).replace(".".concat(Skeleton.tempExtention, ".").concat(Skeleton.generationStrategy), '');
-        this.filePath = filePath.replace("SKELETON", "".concat(bone)).replace(folderName, "dist_".concat(folderName));
-        params = params.replace(/\\"/g, '"');
-        this.params = JSON.parse(params);
-        var _fileName = this.fileName.split(".");
-        var extension = _fileName.pop();
-        this.params = __assign(__assign({}, this.params), { bone: bone, Bone: Bone, fileName: _fileName.join(""), fileExtension: extension, filePath: this.filePath });
+var fs = require("fs");
+var child_process_1 = require("child_process");
+var GenerateFromFolder_Tools = /** @class */ (function () {
+    function GenerateFromFolder_Tools() {
     }
-    var _a;
-    _a = Skeleton;
-    Skeleton.generationStrategy = GenerationStrategy.JS;
-    Skeleton.tempExtention = "skltmp";
-    Skeleton.fileExtention = "skl";
-    Skeleton.folderPath = "";
-    /**
-    * Generates all the files, folders and subfolders defined at "folderPath".
-    * The word SKELETON in folder and file names will be replaced by "bone" parameter.
-    * Files inside "folderPath" that matchs the extension *skl.js will be generated, replacing the content inside.
-    * A new folder named "dist_FOLDERNAME" will be created at the same height of "FOLDERNAME".
-    * All generated files will be inside "dist_FOLDERNAME" folder, preserving the original structure.
-    * @param folderPath Path of the root folder to be generated.
-    * @param bone Word that will replace SKELETON matches.
-    * @param params Optional parameters that can be referenced inside .skl.js files.
-    */
-    Skeleton.generateFromFolder = function (folderPath, bone, params) {
-        if (params === void 0) { params = {}; }
-        console.log("\n".concat(Skeleton.sparklesIcon, " Generating files for \"").concat(bone, "\" at \"").concat(folderPath, "\"\n"));
-        Skeleton.folderPath = folderPath;
-        var paramsString = JSON.stringify(params).replace(/"/g, '\\"');
-        Skeleton._generateFromFolder(folderPath, bone, "'".concat(paramsString, "'"));
+    GenerateFromFolder_Tools.getTempFileContent = function (filePath) {
+        var fileText = fs.readFileSync(filePath, "utf8");
+        while (fileText.slice(-1) !== "`") {
+            fileText = fileText.substring(0, fileText.length - 1);
+        }
+        if (fileText.endsWith("`"))
+            return "".concat(GenerateFromFolder.HEADER).concat(fileText).concat(GenerateFromFolder.FOOTER);
+        else {
+            console.log("Error reading file: ".concat(filePath));
+            return "";
+        }
     };
-    Skeleton._generateFromFolder = function (rootFolderPath, bone, params) {
-        fs.readdir(rootFolderPath, function (err, files) {
+    GenerateFromFolder_Tools.stringfyParams = function (params) {
+        return "\"".concat(JSON.stringify(params).replace(/"/g, '\\"'), "\"");
+    };
+    GenerateFromFolder_Tools.getFilesPaths = function (relativePath, boneFileName, boneWord) {
+        var boneFilePath = path.join(GenerateFromFolder.bonesPath, relativePath, boneFileName);
+        var tempFilePath = path.join(GenerateFromFolder.bonesPath, relativePath, boneFileName.replace(GenerateFromFolder.SKL_EXTENTION, GenerateFromFolder.TEMP_EXTENTION));
+        var generatedFilePath = path
+            .join(GenerateFromFolder.distPath, relativePath, boneFileName.replace(GenerateFromFolder.TEMP_EXTENTION, ""))
+            .replace(/SKELETON/g, boneWord);
+        return { boneFilePath: boneFilePath, tempFilePath: tempFilePath, generatedFilePath: generatedFilePath };
+    };
+    return GenerateFromFolder_Tools;
+}());
+var GenerateFromFolder = /** @class */ (function () {
+    function GenerateFromFolder() {
+    }
+    GenerateFromFolder.forOneBoneWord = function (boneWord) {
+        console.log("\n".concat(GenerateFromFolder.SPARKS_ICON, " Generating files for \"").concat(boneWord, "\" at \"").concat(GenerateFromFolder.distPath, "\"\n"));
+        GenerateFromFolder.folderIterator(GenerateFromFolder.bonesPath, boneWord);
+    };
+    GenerateFromFolder.SPARKS_ICON = "✨";
+    GenerateFromFolder.DIST_WORD = "dist_";
+    GenerateFromFolder.SKL_EXTENTION = "skl.js";
+    GenerateFromFolder.TEMP_EXTENTION = "skltmp.js";
+    GenerateFromFolder.bonesPath = "";
+    GenerateFromFolder.distPath = "";
+    GenerateFromFolder.params = {};
+    GenerateFromFolder.folderIterator = function (rootPath, boneWord, relativePath) {
+        if (relativePath === void 0) { relativePath = ""; }
+        fs.readdir(rootPath, function (err, filesAndFolders) {
             if (err) {
                 console.error("Could not list the directory.", err);
                 process.exit(1);
             }
-            files.forEach(function (file) {
-                var filePath = path.join(rootFolderPath, file);
-                fs.stat(filePath, function (error, stat) {
+            filesAndFolders.forEach(function (fileOrFolderName) {
+                var fileOrFolderPath = path.join(GenerateFromFolder.bonesPath, relativePath, fileOrFolderName);
+                fs.stat(fileOrFolderPath, function (error, fileOrFolder) {
                     if (error) {
                         console.error("Error stating file.", error);
                         return;
                     }
-                    if (stat.isFile()) {
-                        if (filePath.endsWith("".concat(Skeleton.fileExtention, ".js"))) {
-                            var header = "";
-                            var executer = "";
-                            if (Skeleton.generationStrategy === GenerationStrategy.TS) {
-                                header = Skeleton.headerTS;
-                                executer = "ts-node";
-                            }
-                            else {
-                                header = Skeleton.headerJS;
-                                executer = "node";
-                            }
-                            var tempFileName = filePath.replace(".".concat(Skeleton.fileExtention, ".js"), ".".concat(Skeleton.tempExtention, ".").concat(Skeleton.generationStrategy));
-                            fs.writeFileSync(tempFileName, "".concat(header).concat(fs.readFileSync(filePath, 'utf8')).concat(Skeleton.footer));
-                            var command = "".concat(executer, " ").concat(tempFileName, " ").concat(bone, " ").concat(Skeleton.folderPath, " ").concat(params, " ");
-                            var output = (0, child_process_1.execSync)(command, { encoding: 'utf-8' });
-                            fs.unlinkSync(tempFileName);
-                            console.log(output);
-                        }
+                    if (fileOrFolder.isFile()) {
+                        GenerateFromFolder.fileGenerator(relativePath, fileOrFolderName, boneWord);
                     }
-                    else
-                        Skeleton._generateFromFolder(filePath, bone, params);
+                    else {
+                        GenerateFromFolder.folderIterator(fileOrFolderPath, boneWord, path.join(relativePath, fileOrFolderName));
+                    }
                 });
             });
         });
     };
-    Skeleton.headerTS = "import * as path from \"path\";\nimport Skeleton from \"skeleton-code-generator\";\nconst s = new Skeleton(process.argv[2], path.basename(__filename), path.dirname(__filename), process.argv[3], process.argv[4]);\ns.generateFromFolder(\n";
-    Skeleton.headerJS = "\"use strict\";\nexports.__esModule = true;\nvar path = require(\"path\");\nvar skeleton_code_generator_1 = require(\"skeleton-code-generator\");\nvar s = new skeleton_code_generator_1(process.argv[2], path.basename(__filename), path.dirname(__filename), process.argv[3], process.argv[4]);\ns.generateFromFolder(\n    ";
-    Skeleton.footer = ")";
-    /**
-    * Generates all the files, folders and subfolders defined at "folderJSON" object inside "generationPath" folder.
-    * @param generationPath Path of the folder to be generated.
-    * @param folderJSON Folder, subfolders and files to generate.
-    */
-    Skeleton.sparklesIcon = "✨";
-    Skeleton.generateFromJSON = function (generationPath, folderJSON) {
-        console.log("\n".concat(Skeleton.sparklesIcon, " Generating files in : \"").concat(generationPath, "\" \n"));
-        Skeleton.tree = Skeleton._generateFromJSON(generationPath, folderJSON);
-        Skeleton.tree.printTree();
-        console.log("\n");
+    GenerateFromFolder.fileGenerator = function (relativePath, boneFileName, boneWord) {
+        var _a = GenerateFromFolder_Tools.getFilesPaths(relativePath, boneFileName, boneWord), boneFilePath = _a.boneFilePath, tempFilePath = _a.tempFilePath, generatedFilePath = _a.generatedFilePath;
+        var tempFileContent = GenerateFromFolder_Tools.getTempFileContent(boneFilePath);
+        var params = __assign(__assign({}, GenerateFromFolder.params), { bone: boneWord, Bone: boneWord.charAt(0).toUpperCase() + boneWord.slice(1), boneFilePath: path.dirname(boneFilePath), boneFileName: path.basename(boneFilePath), tempFilePath: path.dirname(tempFilePath), tempFileName: path.basename(tempFilePath), generatedFilePath: path.dirname(generatedFilePath), generatedFileName: path
+                .basename(generatedFilePath)
+                .replace(".".concat(GenerateFromFolder.SKL_EXTENTION), ""), extension: path
+                .basename(generatedFilePath)
+                .replace(".".concat(GenerateFromFolder.SKL_EXTENTION), "")
+                .split(".")
+                .pop() });
+        fs.writeFileSync(tempFilePath, tempFileContent);
+        var command = "node \"".concat(tempFilePath, "\" ").concat(GenerateFromFolder_Tools.stringfyParams(params));
+        var output = (0, child_process_1.execSync)(command, { encoding: "utf-8" });
+        fs.unlinkSync(tempFilePath);
+        console.log(output);
     };
-    Skeleton.folderIcon = "📂";
-    Skeleton.fileIcon = "📄";
-    Skeleton._generateFromJSON = function (rootFolderPath, folderSkeleton) {
-        var name = folderSkeleton.name, files = folderSkeleton.files, folders = folderSkeleton.subfolders;
-        var folderPath = path.join(rootFolderPath, name);
-        var tree = new oo_ascii_tree_1.AsciiTree("".concat(_a.folderIcon, " ").concat(folderSkeleton.name));
-        fs.mkdirSync(folderPath, { recursive: true });
-        if (folders) {
-            folders.forEach(function (folder) {
-                tree.add(Skeleton._generateFromJSON(folderPath, folder));
-            });
+    GenerateFromFolder.HEADER = "\"use strict\";\nexports.__esModule = true;\nvar fs = require(\"fs\");\nvar path = require(\"path\");\nvar params = JSON.parse(process.argv[2].replace(/\\\"/g, '\"'));\nconst folderIcon = \"\uD83D\uDCC2\";\nconst fileIcon = \"\uD83D\uDCC4\";\nconst getFileContent =\n    ";
+    GenerateFromFolder.FOOTER = ";\nconst fileContent = getFileContent(params);\nfs.mkdirSync(params.generatedFilePath, { recursive: true });\nfs.writeFileSync(path.join(params.generatedFilePath, params.generatedFileName), fileContent);\nconsole.log(\n    `\t ${folderIcon} ${params.generatedFilePath}\n\t  \u2514\u2500${fileIcon} ${params.generatedFileName}`\n  );\n";
+    return GenerateFromFolder;
+}());
+var Skeleton = /** @class */ (function () {
+    function Skeleton() {
+    }
+    Skeleton.generateFromFolder = function (paths, boneWord, params) {
+        if (params === void 0) { params = {}; }
+        GenerateFromFolder.params = params;
+        if (typeof paths === "string") {
+            GenerateFromFolder.bonesPath = paths;
+            GenerateFromFolder.distPath = path.join(path.dirname(paths), "".concat(GenerateFromFolder.DIST_WORD).concat(path.basename(paths)));
         }
-        if (files) {
-            files.forEach(function (file) {
-                if (file.name.startsWith("/") || file.name.startsWith("\\"))
-                    file.name = file.name.slice(1);
-                file.name = file.name.replace("/", "\\");
-                if (file.name.split("\\").length > 1) {
-                    var folder = Skeleton.generateSubfolderSkeleton(file);
-                    tree.add(Skeleton._generateFromJSON(folderPath, folder));
-                }
-                else {
-                    tree.add(new oo_ascii_tree_1.AsciiTree("".concat(_a.fileIcon, " ").concat(file.name)));
-                    fs.writeFileSync(path.join(folderPath, file.name), file.content || "No content");
-                }
-            });
+        else {
+            GenerateFromFolder.bonesPath = paths.bonesPath;
+            GenerateFromFolder.distPath = paths.distPath;
         }
-        return tree;
-    };
-    Skeleton.generateSubfolderSkeleton = function (file) {
-        var names = file.name.split("\\");
-        var fileName = names.pop() || "";
-        var folderName = path.join.apply(path, names);
-        var fileFolder = {
-            name: folderName,
-            files: [{
-                    name: fileName,
-                    content: file.content
-                }]
-        };
-        while (fileFolder.name.split("\\").length > 1) {
-            var folderNames = fileFolder.name.split("\\");
-            var subfolderName = folderNames.pop() || "";
-            var folderName_1 = path.join.apply(path, folderNames);
-            fileFolder = {
-                name: folderName_1,
-                subfolders: [{
-                        name: subfolderName,
-                        files: fileFolder.files,
-                        subfolders: fileFolder.subfolders
-                    }]
-            };
-        }
-        return fileFolder;
+        if (typeof boneWord === "string")
+            GenerateFromFolder.forOneBoneWord(boneWord);
+        else
+            boneWord.forEach(function (bone) { return GenerateFromFolder.forOneBoneWord(bone); });
     };
     return Skeleton;
 }());
 module.exports = Skeleton;
 // Created by:
 //
-//         ___       _ _     _
-//        |_  |     | (_)   |/
+//       _____       _ _     _
+//      |___  |     | (_)   |/
 //          | |_   _| |_  __ _ _ __
 //          | | | | | | |/ _` | '_ \
 //      /\__/ / |_| | | | (_| | | | |
@@ -198,4 +141,5 @@ module.exports = Skeleton;
 //
 //
 // JulianDM1995@gmail.com
-// 23/02/22
+// 1.0:  23/02/22
+// 1.1:  23/04/22

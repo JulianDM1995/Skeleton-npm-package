@@ -12,7 +12,7 @@
 
 <p>
   <a href="https://github.com/JulianDM1995" target="_blank">
-    <img alt="Version" src="https://github.com/JulianDM1995/Skeleton-npm-package/blob/main/designs/design_3.svg">
+    <img alt="Version" src="https://github.com/JulianDM1995/Skeleton-npm-package/blob/main/design.svg">
   </a>
 </p>
 
@@ -40,26 +40,10 @@ var Skeleton = require("skeleton-code-generator");
 
 //Main methods:
 Skeleton.generateFromFolder(folderToGenerate, boneWord, params)
-Skeleton.generateFromJSON(folderToGenerate, folderSkeleton)
-```
-### Typescript:
-```js
-//Importation
-import Skeleton, { FolderSkeleton } from "skeleton-code-generator";
-
-//Main methods:
-Skeleton.generateFromFolder(folderToGenerate, boneWord, params)
-Skeleton.generateFromJSON(folderToGenerate, folderSkeleton)
 ```
 
 ## Main Methods
 ### generateFromFolder
-
-<p>
-  <a href="https://github.com/JulianDM1995" target="_blank">
-    <img alt="Version" src="https://github.com/JulianDM1995/Skeleton-npm-package/blob/main/designs/design_2.svg">
-  </a>
-</p>
 
 - Generates all the files, folders and subfolders defined at "folderPath". 
 - The word SKELETON in folder and file names will be replaced by "bone" parameter.
@@ -73,50 +57,3 @@ Skeleton.generateFromJSON(folderToGenerate, folderSkeleton)
 | folderPath | string | Path of the root folder to be generated |
 | bone | string | Word that will replace SKELETON matches |
 | params | any | Optional parameters that can be referenced inside .skl.js files |
-
-### generateFromJSON
-
-<p>
-  <a href="https://github.com/JulianDM1995" target="_blank">
-    <img alt="Version" src="https://github.com/JulianDM1995/Skeleton-npm-package/blob/main/designs/design_1.svg">
-  </a>
-</p>
-
-Generates all the files, folders and subfolders defined at "folderJSON" object inside "generationPath" folder.
-
-| Parameter | Type | Description |
-| --------------- | --------------- | --------------- |
-| generationPath | string | Path of the folder to be generated |
-| folderJSON | FolderSkeleton | Folder, subfolders and files to generate |
-
-## Interfaces
-### FileSkeleton
-
-JSON definition of a text-based file. 
-
-| Parameter | Type | Description |
-| --------------- | --------------- | --------------- |
-| name | string | File name |
-| content | string | File content |
-
-### FolderSkeleton
-
-JSON definition of a folder. 
-
-| Parameter | Type | Description |
-| --------------- | --------------- | --------------- |
-| name | string | Folder name |
-| files | FileSkeleton[] | Folder files |
-| subfolders | FolderSkeleton[] | Subfolders |
-
-### Examples:
-
-You can find all the examples for JS and TS in `./examples` folder.
-To run an example, run the following commands: 
-- `npm install`
-- `npm install skeleton-code-generator`
-- `yarn test`
-
-### Icons:
-
-To install the icon pack open `./icons/SetIcons.bat` and follow the instructions shown in the console.

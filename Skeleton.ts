@@ -1,7 +1,6 @@
 import * as path from "path";
 import * as fs from "fs";
 import { execSync } from "child_process";
-import { AsciiTree } from "oo-ascii-tree";
 
 interface IPaths {
   bonesPath: string;
@@ -21,8 +20,8 @@ class GenerateFromFolder_Tools {
       return "";
     }
   }
-  static stringfyParams(s: any) {
-    return `\"${JSON.stringify(s).replace(/"/g, '\\"')}\"`;
+  static stringfyParams(params: any) {
+    return `\"${JSON.stringify(params).replace(/"/g, '\\"')}\"`;
   }
   static getFilesPaths = (
     relativePath: string,
@@ -147,11 +146,13 @@ class GenerateFromFolder {
 
     fs.writeFileSync(tempFilePath, tempFileContent);
 
-    const command = `node ${tempFilePath} ${GenerateFromFolder_Tools.stringfyParams(
+    const command = `node "${tempFilePath}" ${GenerateFromFolder_Tools.stringfyParams(
       params
     )}`;
-    execSync(command, { encoding: "utf-8" });
+    
+    const output = execSync(command, { encoding: "utf-8" });
     fs.unlinkSync(tempFilePath);
+    console.log(output);
   };
 
   static HEADER: string = `"use strict";
@@ -168,6 +169,9 @@ const getFileContent =
 const fileContent = getFileContent(params);
 fs.mkdirSync(params.generatedFilePath, { recursive: true });
 fs.writeFileSync(path.join(params.generatedFilePath, params.generatedFileName), fileContent);
+console.log(
+    \`\t \${folderIcon} \${params.generatedFilePath}\n\t  └─\${fileIcon} \${params.generatedFileName}\`
+  );
 `;
 }
 
@@ -195,3 +199,24 @@ export default class Skeleton {
 }
 
 //module.exports = Skeleton;
+// Created by:
+//
+//       _____       _ _     _
+//      |___  |     | (_)   |/
+//          | |_   _| |_  __ _ _ __
+//          | | | | | | |/ _` | '_ \
+//      /\__/ / |_| | | | (_| | | | |
+//      \____/ \__,_|_|_|\__,_|_| |_|
+//
+//
+//      ___  ___         _ _
+//      |  \/  |        | (_)
+//      | .  . | ___  __| |_ _ __   __ _
+//      | |\/| |/ _ \/ _` | | '_ \ / _` |
+//      | |  | |  __/ (_| | | | | | (_| |
+//      \_|  |_/\___|\__,_|_|_| |_|\__,_|
+//
+//
+// JulianDM1995@gmail.com
+// 1.0:  23/02/22
+// 1.1:  23/04/22
