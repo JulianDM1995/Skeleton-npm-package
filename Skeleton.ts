@@ -93,11 +93,13 @@ class GenerateFromFolder {
             return;
           }
           if (fileOrFolder.isFile()) {
-            GenerateFromFolder.fileGenerator(
-              relativePath,
-              fileOrFolderName,
-              boneWord
-            );
+            if (fileOrFolderName.endsWith(GenerateFromFolder.SKL_EXTENTION)) {
+              GenerateFromFolder.fileGenerator(
+                relativePath,
+                fileOrFolderName,
+                boneWord
+              );
+            }
           } else {
             GenerateFromFolder.folderIterator(
               fileOrFolderPath,
@@ -149,7 +151,7 @@ class GenerateFromFolder {
     const command = `node "${tempFilePath}" ${GenerateFromFolder_Tools.stringfyParams(
       params
     )}`;
-    
+
     const output = execSync(command, { encoding: "utf-8" });
     fs.unlinkSync(tempFilePath);
     console.log(output);

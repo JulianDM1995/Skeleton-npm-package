@@ -71,7 +71,9 @@ var GenerateFromFolder = /** @class */ (function () {
                         return;
                     }
                     if (fileOrFolder.isFile()) {
-                        GenerateFromFolder.fileGenerator(relativePath, fileOrFolderName, boneWord);
+                        if (fileOrFolderName.endsWith(GenerateFromFolder.SKL_EXTENTION)) {
+                            GenerateFromFolder.fileGenerator(relativePath, fileOrFolderName, boneWord);
+                        }
                     }
                     else {
                         GenerateFromFolder.folderIterator(fileOrFolderPath, boneWord, path.join(relativePath, fileOrFolderName));
