@@ -1,250 +1,197 @@
-import { execSync } from "child_process";
-import * as fs from "fs";
 import * as path from "path";
+import * as fs from "fs";
+import { execSync } from "child_process";
 import { AsciiTree } from "oo-ascii-tree";
 
-enum GenerationStrategy {
-    JS = "js",
-    TS = "ts"
+interface IPaths {
+  bonesPath: string;
+  distPath: string;
 }
 
-/**
-* JSON definition of a text-based file. 
-* @param name File name
-* @param content File content
-*/
-export interface FileSkeleton {
-    name: string
-    content?: string
+class GenerateFromFolder_Tools {
+  static getTempFileContent(filePath: string): string {
+    let fileText = fs.readFileSync(filePath, "utf8");
+    while (fileText.slice(-1) !== "`") {
+      fileText = fileText.substring(0, fileText.length - 1);
+    }
+    if (fileText.endsWith("`"))
+      return `${GenerateFromFolder.HEADER}${fileText}${GenerateFromFolder.FOOTER}`;
+    else {
+      console.log(`Error reading file: ${filePath}`);
+      return "";
+    }
+  }
+  static stringfyParams(s: any) {
+    return `\"${JSON.stringify(s).replace(/"/g, '\\"')}\"`;
+  }
+  static getFilesPaths = (
+    relativePath: string,
+    boneFileName: string,
+    boneWord: string
+  ) => {
+    const boneFilePath = path.join(
+      GenerateFromFolder.bonesPath,
+      relativePath,
+      boneFileName
+    );
+
+    const tempFilePath = path.join(
+      GenerateFromFolder.bonesPath,
+      relativePath,
+      boneFileName.replace(
+        GenerateFromFolder.SKL_EXTENTION,
+        GenerateFromFolder.TEMP_EXTENTION
+      )
+    );
+
+    const generatedFilePath = path
+      .join(
+        GenerateFromFolder.distPath,
+        relativePath,
+        boneFileName.replace(GenerateFromFolder.TEMP_EXTENTION, "")
+      )
+      .replace(/SKELETON/g, boneWord);
+    return { boneFilePath, tempFilePath, generatedFilePath };
+  };
 }
 
-/**
-* JSON definition of a folder. 
-* @param name Folder name
-* @param files Folder files
-* @param subfolders Subfolders
-*/
-export interface FolderSkeleton {
-    name: string
-    files?: FileSkeleton[]
-    subfolders?: FolderSkeleton[]
+class GenerateFromFolder {
+  static SPARKS_ICON = "✨";
+  static DIST_WORD: string = "dist_";
+  static SKL_EXTENTION: string = "skl.js";
+  static TEMP_EXTENTION: string = "skltmp.js";
+
+  static bonesPath: string = "";
+  static distPath: string = "";
+  static params: any = {};
+
+  static forOneBoneWord(boneWord: string) {
+    console.log(
+      `\n${GenerateFromFolder.SPARKS_ICON} Generating files for "${boneWord}" at "${GenerateFromFolder.distPath}"\n`
+    );
+    GenerateFromFolder.folderIterator(GenerateFromFolder.bonesPath, boneWord);
+  }
+
+  static folderIterator = (
+    rootPath: string,
+    boneWord: string,
+    relativePath: string = ""
+  ) => {
+    fs.readdir(rootPath, (err, filesAndFolders) => {
+      if (err) {
+        console.error("Could not list the directory.", err);
+        process.exit(1);
+      }
+      filesAndFolders.forEach((fileOrFolderName) => {
+        const fileOrFolderPath = path.join(
+          GenerateFromFolder.bonesPath,
+          relativePath,
+          fileOrFolderName
+        );
+        fs.stat(fileOrFolderPath, (error, fileOrFolder) => {
+          if (error) {
+            console.error("Error stating file.", error);
+            return;
+          }
+          if (fileOrFolder.isFile()) {
+            GenerateFromFolder.fileGenerator(
+              relativePath,
+              fileOrFolderName,
+              boneWord
+            );
+          } else {
+            GenerateFromFolder.folderIterator(
+              fileOrFolderPath,
+              boneWord,
+              path.join(relativePath, fileOrFolderName)
+            );
+          }
+        });
+      });
+    });
+  };
+
+  static fileGenerator = (
+    relativePath: string,
+    boneFileName: string,
+    boneWord: string
+  ) => {
+    const { boneFilePath, tempFilePath, generatedFilePath } =
+      GenerateFromFolder_Tools.getFilesPaths(
+        relativePath,
+        boneFileName,
+        boneWord
+      );
+
+    const tempFileContent =
+      GenerateFromFolder_Tools.getTempFileContent(boneFilePath);
+
+    const params = {
+      ...GenerateFromFolder.params,
+      bone: boneWord,
+      Bone: boneWord.charAt(0).toUpperCase() + boneWord.slice(1),
+      boneFilePath: path.dirname(boneFilePath),
+      boneFileName: path.basename(boneFilePath),
+      tempFilePath: path.dirname(tempFilePath),
+      tempFileName: path.basename(tempFilePath),
+      generatedFilePath: path.dirname(generatedFilePath),
+      generatedFileName: path
+        .basename(generatedFilePath)
+        .replace(`.${GenerateFromFolder.SKL_EXTENTION}`, ""),
+      extension: path
+        .basename(generatedFilePath)
+        .replace(`.${GenerateFromFolder.SKL_EXTENTION}`, "")
+        .split(".")
+        .pop(),
+    };
+
+    fs.writeFileSync(tempFilePath, tempFileContent);
+
+    const command = `node ${tempFilePath} ${GenerateFromFolder_Tools.stringfyParams(
+      params
+    )}`;
+    execSync(command, { encoding: "utf-8" });
+    fs.unlinkSync(tempFilePath);
+  };
+
+  static HEADER: string = `"use strict";
+exports.__esModule = true;
+var fs = require("fs");
+var path = require("path");
+var params = JSON.parse(process.argv[2].replace(/\\"/g, '"'));
+const folderIcon = "📂";
+const fileIcon = "📄";
+const getFileContent =
+    `;
+
+  static FOOTER: string = `;
+const fileContent = getFileContent(params);
+fs.mkdirSync(params.generatedFilePath, { recursive: true });
+fs.writeFileSync(path.join(params.generatedFilePath, params.generatedFileName), fileContent);
+`;
 }
 
 export default class Skeleton {
-
-    private static generationStrategy: GenerationStrategy = GenerationStrategy.TS
-    private static tempExtention: string = "skltmp"
-    private static fileExtention: string = "skl"
-    private static folderPath = ""
-    private fileName: string = ""
-    private filePath: string = ""
-    private params: any = {}
-    private static tree: AsciiTree;
-
-    constructor(bone: string, fileName: string, filePath: string, folderPath: string, params: string) {
-        const folderName = path.basename(folderPath);
-        let Bone = bone.charAt(0).toUpperCase() + bone.slice(1)
-        this.fileName = fileName.replace("SKELETON", Bone).replace(`.${Skeleton.tempExtention}.${Skeleton.generationStrategy}`, '');
-        this.filePath = filePath.replace("SKELETON", `${bone}`).replace(folderName, `dist_${folderName}`)
-        params = params.replace(/\\"/g, '"');
-        this.params = JSON.parse(params)
-        let _fileName = this.fileName.split(".")
-        let extension = _fileName.pop();
-
-        this.params = {
-            ...this.params,
-            bone,
-            Bone,
-            fileName: _fileName.join(""),
-            fileExtension: extension,
-            filePath: this.filePath,
-        }
+  public static generateFromFolder = (
+    paths: string | IPaths,
+    boneWord: string | string[],
+    params: any = {}
+  ) => {
+    GenerateFromFolder.params = params;
+    if (typeof paths === "string") {
+      GenerateFromFolder.bonesPath = paths;
+      GenerateFromFolder.distPath = path.join(
+        path.dirname(paths),
+        `${GenerateFromFolder.DIST_WORD}${path.basename(paths)}`
+      );
+    } else {
+      GenerateFromFolder.bonesPath = paths.bonesPath;
+      GenerateFromFolder.distPath = paths.distPath;
     }
-
-    generateFromFolder = (generateCallbackfn: (
-        params?: any,
-    ) => string): void => {
-        this._generateFromFolder(generateCallbackfn(this.params))
-    }
-
-    private _generateFromFolder = (body: string): void => {
-        console.log(`\t ${Skeleton.folderIcon} ${this.filePath}\n\t  └─${Skeleton.fileIcon} ${this.fileName}`)
-        fs.mkdirSync(this.filePath, { recursive: true });
-        fs.writeFileSync(path.join(this.filePath, this.fileName), body);
-    }
-
-    /**
-    * Generates all the files, folders and subfolders defined at "folderPath". 
-    * The word SKELETON in folder and file names will be replaced by "bone" parameter.
-    * Files inside "folderPath" that matchs the extension *skl.js will be generated, replacing the content inside.
-    * A new folder named "dist_FOLDERNAME" will be created at the same height of "FOLDERNAME".
-    * All generated files will be inside "dist_FOLDERNAME" folder, preserving the original structure.
-    * @param folderPath Path of the root folder to be generated.
-    * @param bone Word that will replace SKELETON matches.
-    * @param params Optional parameters that can be referenced inside .skl.js files.
-    */
-    static generateFromFolder = (folderPath: string, bone: string, params: any = {}) => {
-        console.log(`\n${Skeleton.sparklesIcon} Generating files for "${bone}" at "${folderPath}"\n`)
-        Skeleton.folderPath = folderPath;
-        const paramsString = JSON.stringify(params).replace(/"/g, '\\"');
-        Skeleton._generateFromFolder(folderPath, bone, `'${paramsString}'`)
-    }
-
-    private static _generateFromFolder = (rootFolderPath: string, bone: string, params: string) => {
-        fs.readdir(rootFolderPath, (err, files) => {
-            if (err) {
-                console.error("Could not list the directory.", err);
-                process.exit(1);
-            }
-            files.forEach(file => {
-                var filePath = path.join(rootFolderPath, file);
-                fs.stat(filePath, (error, stat) => {
-                    if (error) {
-                        console.error("Error stating file.", error);
-                        return;
-                    }
-                    if (stat.isFile()) {
-                        if (filePath.endsWith(`${Skeleton.fileExtention}.js`)) {
-                            let header = "";
-                            let executer = "";
-                            if (Skeleton.generationStrategy === GenerationStrategy.TS) {
-                                header = Skeleton.headerTS;
-                                executer = "ts-node";
-                            } else {
-                                header = Skeleton.headerJS;
-                                executer = "node";
-                            }
-                            const tempFileName = filePath.replace(`.${Skeleton.fileExtention}.js`, `.${Skeleton.tempExtention}.${Skeleton.generationStrategy}`);
-
-                            fs.writeFileSync(tempFileName, `${header}${fs.readFileSync(filePath, 'utf8')}${Skeleton.footer}`);
-                            const command = `${executer} ${tempFileName} ${bone} ${Skeleton.folderPath} ${params} `
-                            const output = execSync(command, { encoding: 'utf-8' });
-                            fs.unlinkSync(tempFileName);
-                            console.log(output);
-                        }
-                    }
-                    else
-                        Skeleton._generateFromFolder(filePath, bone, params);
-                });
-            });
-        });
-    }
-
-    private static headerTS: string =
-        `import * as path from "path";
-import Skeleton from "skeleton-code-generator";
-const s = new Skeleton(process.argv[2], path.basename(__filename), path.dirname(__filename), process.argv[3], process.argv[4]);
-s.generateFromFolder(
-`
-
-    private static headerJS: string = `"use strict";
-exports.__esModule = true;
-var path = require("path");
-var skeleton_code_generator_1 = require("skeleton-code-generator");
-var s = new skeleton_code_generator_1(process.argv[2], path.basename(__filename), path.dirname(__filename), process.argv[3], process.argv[4]);
-s.generateFromFolder(
-    `
-
-    private static footer: string = `)`
-
-    /**
-    * Generates all the files, folders and subfolders defined at "folderJSON" object inside "generationPath" folder. 
-    * @param generationPath Path of the folder to be generated.
-    * @param folderJSON Folder, subfolders and files to generate.
-    */
-    private static sparklesIcon = "✨"
-    static generateFromJSON = (generationPath: string, folderJSON: FolderSkeleton) => {
-        console.log(`\n${Skeleton.sparklesIcon} Generating files in : "${generationPath}" \n`)
-        Skeleton.tree = Skeleton._generateFromJSON(generationPath, folderJSON)
-        Skeleton.tree.printTree();
-        console.log("\n")
-    }
-
-    private static folderIcon = "📂"
-    private static fileIcon = "📄"
-    private static _generateFromJSON = (rootFolderPath: string, folderSkeleton: FolderSkeleton): AsciiTree => {
-        const { name, files, subfolders: folders } = folderSkeleton
-        const folderPath = path.join(rootFolderPath, name);
-
-        let tree = new AsciiTree(`${this.folderIcon} ${folderSkeleton.name}`);
-
-        fs.mkdirSync(folderPath, { recursive: true });
-        if (folders) {
-            folders.forEach(folder => {
-                tree.add(Skeleton._generateFromJSON(folderPath, folder))
-            })
-        }
-        if (files) {
-            files.forEach(file => {
-                if(file.name.startsWith("/") || file.name.startsWith("\\")) file.name = file.name.slice(1)
-                file.name = file.name.replace("/","\\")
-                if (file.name.split("\\").length > 1) {
-                    const folder = Skeleton.generateSubfolderSkeleton(file)
-                    tree.add(Skeleton._generateFromJSON(folderPath, folder))
-                }
-                else {
-                    tree.add(new AsciiTree(`${this.fileIcon} ${file.name}`))
-                    fs.writeFileSync(path.join(folderPath, file.name), file.content || "No content");
-                }
-            })
-        }
-
-        return tree;
-    }
-
-    private static generateSubfolderSkeleton = (file: FileSkeleton): FolderSkeleton => {
-
-        const names = file.name.split("\\")
-        const fileName = names.pop() || ""
-        const folderName = path.join(...names)
-
-        let fileFolder: FolderSkeleton = {
-            name: folderName,
-            files: [{
-                name: fileName,
-                content: file.content
-            }]
-
-        }
-
-        while (fileFolder.name.split("\\").length > 1) {
-            const folderNames = fileFolder.name.split("\\")
-            const subfolderName = folderNames.pop() || ""
-            const folderName = path.join(...folderNames)
-            fileFolder = {
-                name: folderName,
-                subfolders: [{
-                    name: subfolderName,
-                    files: fileFolder.files,
-                    subfolders: fileFolder.subfolders
-                }]
-            }
-
-        }
-        return fileFolder
-
-    }
-
+    if (typeof boneWord === "string")
+      GenerateFromFolder.forOneBoneWord(boneWord);
+    else boneWord.forEach((bone) => GenerateFromFolder.forOneBoneWord(bone));
+  };
 }
 
-// Created by:
-//
-//         ___       _ _     _
-//        |_  |     | (_)   |/
-//          | |_   _| |_  __ _ _ __
-//          | | | | | | |/ _` | '_ \
-//      /\__/ / |_| | | | (_| | | | |
-//      \____/ \__,_|_|_|\__,_|_| |_|
-//
-//
-//      ___  ___         _ _
-//      |  \/  |        | (_)
-//      | .  . | ___  __| |_ _ __   __ _
-//      | |\/| |/ _ \/ _` | | '_ \ / _` |
-//      | |  | |  __/ (_| | | | | | (_| |
-//      \_|  |_/\___|\__,_|_|_| |_|\__,_|
-//
-//
-// JulianDM1995@gmail.com
-// 23/02/22
-
+//module.exports = Skeleton;
