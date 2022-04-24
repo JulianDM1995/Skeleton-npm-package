@@ -48,9 +48,9 @@ const extraParams = {anyParamName: "AnyParamValue"}
 
 ## generateFromFolder
 
-- Generates all the files, folders and subfolders defined at "bonesPath". If "bonesPath" is a string, a new folder named "**dist_FOLDERNAME**" will be created at the same height of "**FOLDERNAME**". If "bonesPath" is an object **{bonesPath: "..." , distPath: "..."}** all the files in **bonesPath** will be generated in **distPath**
-- The word SKELETON in folders and files names will be replaced by "bone" parameter.
-- Files inside "bonesPath" that matchs the extension **\*SKL.JS** will be generated, replacing the content inside.
+- Generates all the files, folders and subfolders defined at **bonesPath**. If **bonesPath** is a string, a new folder named "**dist_FOLDERNAME**" will be created at the same height of "**FOLDERNAME**". If **bonesPath** is an object **{bonesPath: "..." , distPath: "..."}** all the files in **bonesPath** will be generated in **distPath**
+- The word **SKELETON** in folders and files names will be replaced by **bone** parameter.
+- Files inside **bonesPath** that match the extension **\*SKL.JS** will be generated, replacing the content inside.
 - A new folder named "**dist_FOLDERNAME**" will be created at the same height of "**FOLDERNAME**".
 - All generated files will be inside "**dist_FOLDERNAME**" folder, preserving the original structure.
 
