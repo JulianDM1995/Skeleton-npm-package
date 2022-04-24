@@ -32,13 +32,19 @@ Installation is done using the
 ```bash
 $ npm install skeleton-code-generator
 ```
-## Module importation
+## Module example:
 ```js
-//Importation
+var path = require("path");
 var Skeleton = require("skeleton-code-generator");
 
-//Main methods:
-Skeleton.generateFromFolder(folderToGenerate, boneWord, params)
+const bonesPath = path.join(__dirname, "raw");
+
+const sklPaths = {
+  bonesPath: path.join(__dirname, "bonesFolder"),
+  distPath: path.join(__dirname, "generatedFolder"),
+};
+
+Skeleton.generateFromFolder(sklPaths, boneWord);
 ```
 
 ## generateFromFolder
