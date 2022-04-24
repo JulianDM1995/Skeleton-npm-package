@@ -37,14 +37,20 @@ $ npm install skeleton-code-generator
 var path = require("path");
 var Skeleton = require("skeleton-code-generator");
 
-const bonesPath = path.join(__dirname, "raw");
+//You can use this, if you want to generate files at dist_FOLDERNAME
+const bonesPath = path.join(__dirname, "bonesFolder");
+Skeleton.generateFromFolder(bonesPath, boneWord);
 
+//You can use this if you want to specify the dist path.
 const sklPaths = {
   bonesPath: path.join(__dirname, "bonesFolder"),
   distPath: path.join(__dirname, "generatedFolder"),
 };
+//Skeleton.generateFromFolder(sklPaths, boneWord);
 
-Skeleton.generateFromFolder(sklPaths, boneWord);
+//Add this parameter if you want to reference any extra param in the skl.js file. 
+const extraParams = {anyParamName: "AnyParamValue"}
+//Skeleton.generateFromFolder(sklPaths, boneWord, extraParams);
 ```
 
 ## generateFromFolder
