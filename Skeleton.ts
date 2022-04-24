@@ -146,6 +146,14 @@ class GenerateFromFolder {
         .pop(),
     };
 
+    if (fs.existsSync(tempFilePath)) {
+      try {
+        fs.unlinkSync(tempFilePath);
+      } catch (err) {
+        console.error(`Error deleting file: ${tempFileContent}, : ${err}`);
+      }
+    }
+
     fs.writeFileSync(tempFilePath, tempFileContent);
 
     const command = `node "${tempFilePath}" ${GenerateFromFolder_Tools.stringfyParams(
@@ -161,19 +169,19 @@ class GenerateFromFolder {
 exports.__esModule = true;
 var fs = require("fs");
 var path = require("path");
-var params = JSON.parse(process.argv[2].replace(/\\"/g, '"'));
+var params = JSON.parse(process.argv[2].replace(/\"/g, '"'));
 const folderIcon = "📂";
 const fileIcon = "📄";
-const getFileContent =
-    `;
+const getFileContent = `;
 
-  static FOOTER: string = `;
+  static FOOTER: string = `
 const fileContent = getFileContent(params);
 fs.mkdirSync(params.generatedFilePath, { recursive: true });
-fs.writeFileSync(path.join(params.generatedFilePath, params.generatedFileName), fileContent);
-console.log(
-    \`\t \${folderIcon} \${params.generatedFilePath}\n\t  └─\${fileIcon} \${params.generatedFileName}\`
-  );
+fs.writeFileSync(
+  path.join(params.generatedFilePath, params.generatedFileName),
+  fileContent
+);
+console.log(\`\t \${folderIcon} \${params.generatedFilePath}\n\t  └─\${fileIcon} \${params.generatedFileName}\`);
 `;
 }
 

@@ -33,7 +33,6 @@ Installation is done using the
 $ npm install skeleton-code-generator
 ```
 ## Module importation
-### Javascript:
 ```js
 //Importation
 var Skeleton = require("skeleton-code-generator");
@@ -42,18 +41,63 @@ var Skeleton = require("skeleton-code-generator");
 Skeleton.generateFromFolder(folderToGenerate, boneWord, params)
 ```
 
-## Main Methods
-### generateFromFolder
+## generateFromFolder
 
-- Generates all the files, folders and subfolders defined at "folderPath". 
-- The word SKELETON in folder and file names will be replaced by "bone" parameter.
-- Files inside "folderPath" that matchs the extension **\*SKL.JS** will be generated, replacing the content inside.
+- Generates all the files, folders and subfolders defined at "bonesPath". If "bonesPath" is a string, a new folder named "**dist_FOLDERNAME**" will be created at the same height of "**FOLDERNAME**". If "bonesPath" is an object **{bonesPath: "..." , distPath: "..."}** all the files in **bonesPath** will be generated in **distPath**
+- The word SKELETON in folders and files names will be replaced by "bone" parameter.
+- Files inside "bonesPath" that matchs the extension **\*SKL.JS** will be generated, replacing the content inside.
 - A new folder named "**dist_FOLDERNAME**" will be created at the same height of "**FOLDERNAME**".
 - All generated files will be inside "**dist_FOLDERNAME**" folder, preserving the original structure.
 
 
 | Parameter | Type | Description |
 | --------------- | --------------- | --------------- |
-| folderPath | string | Path of the root folder to be generated |
+| bonesPath | string or {bonesPath: string , distPath: string} | Path of folder to be generated and dist folder |
 | bone | string | Word that will replace SKELETON matches |
 | params | any | Optional parameters that can be referenced inside .skl.js files |
+
+### .skl.js file example
+```js
+({ Bone }) => `
+import { Router } from "express";
+
+import {
+  create${Bone},
+  read${Bone},
+  delete${Bone},
+  update${Bone},
+} from "../../../controllers/${Bone}";
+
+export const ${Bone}Routes = {
+  create${Bone}: "/create${Bone}",
+  read${Bone}: "/read${Bone}",
+  update${Bone}: "/update${Bone}",
+  delete${Bone}: "/delete${Bone}",
+};
+
+const router: Router = Router();
+
+router.post(${Bone}Routes.create${Bone}, create${Bone});
+router.get(${Bone}Routes.read${Bone}+"/:id", read${Bone});
+router.put(${Bone}Routes.update${Bone}+"/:id", update${Bone});
+router.delete(${Bone}Routes.delete${Bone}+"/:id", delete${Bone});
+
+export default router;
+`;
+
+```
+
+"Bone" is not the only parameter you can reference. By default you can use the following ones:
+| Parameter | Description |
+| --------------- | --------------- |
+| bone | Word that will replace SKELETON matches |
+| Bone | Word that will replace SKELETON matches with first letter in Uppercase |
+| boneFilePath | bone file path |
+| boneFileName | bone file name |
+| tempFilePath | temp bone file path |
+| tempFileName | temp bone file name |
+| generatedFilePath | generated file path |
+| generatedFileName | generated file name |
+| extension | generated file extension |
+
+You can also use ANY parameter defined in "params".

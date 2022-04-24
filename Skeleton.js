@@ -92,14 +92,22 @@ var GenerateFromFolder = /** @class */ (function () {
                 .replace(".".concat(GenerateFromFolder.SKL_EXTENTION), "")
                 .split(".")
                 .pop() });
+        if (fs.existsSync(tempFilePath)) {
+            try {
+                fs.unlinkSync(tempFilePath);
+            }
+            catch (err) {
+                console.error("Error deleting file: ".concat(tempFileContent, ", : ").concat(err));
+            }
+        }
         fs.writeFileSync(tempFilePath, tempFileContent);
         var command = "node \"".concat(tempFilePath, "\" ").concat(GenerateFromFolder_Tools.stringfyParams(params));
         var output = (0, child_process_1.execSync)(command, { encoding: "utf-8" });
         fs.unlinkSync(tempFilePath);
         console.log(output);
     };
-    GenerateFromFolder.HEADER = "\"use strict\";\nexports.__esModule = true;\nvar fs = require(\"fs\");\nvar path = require(\"path\");\nvar params = JSON.parse(process.argv[2].replace(/\\\"/g, '\"'));\nconst folderIcon = \"\uD83D\uDCC2\";\nconst fileIcon = \"\uD83D\uDCC4\";\nconst getFileContent =\n    ";
-    GenerateFromFolder.FOOTER = ";\nconst fileContent = getFileContent(params);\nfs.mkdirSync(params.generatedFilePath, { recursive: true });\nfs.writeFileSync(path.join(params.generatedFilePath, params.generatedFileName), fileContent);\nconsole.log(\n    `\t ${folderIcon} ${params.generatedFilePath}\n\t  \u2514\u2500${fileIcon} ${params.generatedFileName}`\n  );\n";
+    GenerateFromFolder.HEADER = "\"use strict\";\nexports.__esModule = true;\nvar fs = require(\"fs\");\nvar path = require(\"path\");\nvar params = JSON.parse(process.argv[2].replace(/\"/g, '\"'));\nconst folderIcon = \"\uD83D\uDCC2\";\nconst fileIcon = \"\uD83D\uDCC4\";\nconst getFileContent = ";
+    GenerateFromFolder.FOOTER = "\nconst fileContent = getFileContent(params);\nfs.mkdirSync(params.generatedFilePath, { recursive: true });\nfs.writeFileSync(\n  path.join(params.generatedFilePath, params.generatedFileName),\n  fileContent\n);\nconsole.log(`\t ${folderIcon} ${params.generatedFilePath}\n\t  \u2514\u2500${fileIcon} ${params.generatedFileName}`);\n";
     return GenerateFromFolder;
 }());
 var Skeleton = /** @class */ (function () {
@@ -123,6 +131,7 @@ var Skeleton = /** @class */ (function () {
     };
     return Skeleton;
 }());
+//exports["default"] = Skeleton;
 module.exports = Skeleton;
 // Created by:
 //
