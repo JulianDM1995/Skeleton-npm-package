@@ -13,9 +13,11 @@ class GenerateFromFolder_Tools {
     while (fileText.slice(-1) !== "`") {
       fileText = fileText.substring(0, fileText.length - 1);
     }
-    if (fileText.endsWith("`"))
+    if (fileText.endsWith("`")) {
+      fileText.replace("// eslint-disable-next-line no-unused-expressions", "");
+      fileText.replace("/* eslint-disable no-unused-expressions */", "");
       return `${GenerateFromFolder.HEADER}${fileText}${GenerateFromFolder.FOOTER}`;
-    else {
+    } else {
       console.log(`Error reading file: ${filePath}`);
       return "";
     }

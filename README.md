@@ -31,8 +31,7 @@ $ yarn add skeleton-code-generator -D
 - Generates all the files, folders and subfolders defined at **bonesPath**. If **bonesPath** is a string, a new folder named "**dist_FOLDERNAME**" will be created at the same height of "**FOLDERNAME**". If **bonesPath** is an object **{bonesPath: "..." , distPath: "..."}** all the files in **bonesPath** will be generated in **distPath**
 - The word **SKELETON** in folders and files names will be replaced by **bone** parameter.
 - Files inside **bonesPath** that match the extension **\*SKL.JS** will be generated, replacing the content inside.
-- A new folder named "**dist_FOLDERNAME**" will be created at the same height of "**FOLDERNAME**".
-- All generated files will be inside "**dist_FOLDERNAME**" folder, preserving the original structure.
+- All generated files will preserve the original structure.
 
 
 | Parameter | Type | Description |
@@ -41,7 +40,7 @@ $ yarn add skeleton-code-generator -D
 | bone | string | Word that will replace SKELETON matches |
 | params | any | Optional parameters that can be referenced inside .skl.js files |
 
-### .skl.js file example
+## .skl.js file example
 ```js
 ({ Bone }) => `
 import { Router } from "express";
@@ -85,7 +84,7 @@ export default router;
 | generatedFileName | generated file name |
 | extension | generated file extension |
 
-You can also use ANY parameter defined in "params".
+**You can also use ANY parameter defined in "params".**
 
 ## Implementation Example:
 ```js

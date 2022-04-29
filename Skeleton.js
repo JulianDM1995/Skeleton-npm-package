@@ -22,8 +22,11 @@ var GenerateFromFolder_Tools = /** @class */ (function () {
         while (fileText.slice(-1) !== "`") {
             fileText = fileText.substring(0, fileText.length - 1);
         }
-        if (fileText.endsWith("`"))
+        if (fileText.endsWith("`")) {
+            fileText.replace("// eslint-disable-next-line no-unused-expressions", "");
+            fileText.replace("/* eslint-disable no-unused-expressions */", "");
             return "".concat(GenerateFromFolder.HEADER).concat(fileText).concat(GenerateFromFolder.FOOTER);
+        }
         else {
             console.log("Error reading file: ".concat(filePath));
             return "";
@@ -131,7 +134,6 @@ var Skeleton = /** @class */ (function () {
     };
     return Skeleton;
 }());
-//exports["default"] = Skeleton;
 module.exports = Skeleton;
 // Created by:
 //
