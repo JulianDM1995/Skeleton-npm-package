@@ -63,7 +63,8 @@ const extraParams = {signature: "YourName", date: "01/01/2023"}
 
 ## .skl.js file example
 ```js
-({ Bone }) => `
+({ Bone, signature, date }) => `
+//File created by ${signature} at ${date}
 import { Router } from "express";
 
 import {
