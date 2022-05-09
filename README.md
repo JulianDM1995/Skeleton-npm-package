@@ -26,7 +26,7 @@ or
 $ yarn add skeleton-code-generator -D
 ```
 
-## generateFromFolder
+## generate
 
 - Generates all the files, folders and subfolders defined at **bonesPath**. If **bonesPath** is a string, a new folder named "**dist_FOLDERNAME**" will be created at the same height of "**FOLDERNAME**". If **bonesPath** is an object **{bonesPath: "..." , distPath: "..."}** all the files in **bonesPath** will be generated in **distPath**
 - The word **SKELETON** in folders and files names will be replaced by **bone** parameter.
@@ -39,6 +39,27 @@ $ yarn add skeleton-code-generator -D
 | bonesPath | string or {bonesPath: string , distPath: string} | Path of folder to be generated and dist folder |
 | bone | string | Word that will replace SKELETON matches |
 | params | any | Optional parameters that can be referenced inside .skl.js files |
+
+## Implementation Example:
+```js
+var path = require("path");
+var Skeleton = require("skeleton-code-generator");
+
+//You can use this, if you want to generate files at dist_FOLDERNAME
+const bonesPath = path.join(__dirname, "bonesFolder");
+Skeleton.generate(bonesPath, boneWord);
+
+//You can use this if you want to specify the dist path.
+const sklPaths = {
+  bonesPath: path.join(__dirname, "bonesFolder"), //This can be the path for a folder with Skeleton structure, or a skl.js file
+  distPath: path.join(__dirname, "generatedFolder"),
+};
+//Skeleton.generate(sklPaths, boneWord);
+
+//Add this parameter if you want to reference any extra param in the skl.js file. 
+const extraParams = {signature: "YourName", date: "01/01/2023"}
+//Skeleton.generate(sklPaths, boneWord, extraParams);
+```
 
 ## .skl.js file example
 ```js
@@ -85,24 +106,3 @@ export default router;
 | extension | generated file extension |
 
 **You can also use ANY parameter defined in "params".**
-
-## Implementation Example:
-```js
-var path = require("path");
-var Skeleton = require("skeleton-code-generator");
-
-//You can use this, if you want to generate files at dist_FOLDERNAME
-const bonesPath = path.join(__dirname, "bonesFolder");
-Skeleton.generateFromFolder(bonesPath, boneWord);
-
-//You can use this if you want to specify the dist path.
-const sklPaths = {
-  bonesPath: path.join(__dirname, "bonesFolder"),
-  distPath: path.join(__dirname, "generatedFolder"),
-};
-//Skeleton.generateFromFolder(sklPaths, boneWord);
-
-//Add this parameter if you want to reference any extra param in the skl.js file. 
-const extraParams = {anyParamName: "AnyParamValue"}
-//Skeleton.generateFromFolder(sklPaths, boneWord, extraParams);
-```

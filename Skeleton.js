@@ -13,53 +13,114 @@ var __assign = (this && this.__assign) || function () {
 exports.__esModule = true;
 var path = require("path");
 var fs = require("fs");
+var readline = require("readline");
 var child_process_1 = require("child_process");
-var GenerateFromFolder_Tools = /** @class */ (function () {
-    function GenerateFromFolder_Tools() {
+var SkeletonGenerator_Tools = /** @class */ (function () {
+    function SkeletonGenerator_Tools() {
     }
-    GenerateFromFolder_Tools.getTempFileContent = function (filePath) {
+    SkeletonGenerator_Tools.getTempFileContent = function (filePath) {
         var fileText = fs.readFileSync(filePath, "utf8");
         while (fileText.slice(-1) !== "`") {
             fileText = fileText.substring(0, fileText.length - 1);
+            if (fileText.length == 0) {
+                console.log("Error reading file: ".concat(filePath));
+                return "";
+            }
         }
         if (fileText.endsWith("`")) {
             fileText.replace("// eslint-disable-next-line no-unused-expressions", "");
             fileText.replace("/* eslint-disable no-unused-expressions */", "");
-            return "".concat(GenerateFromFolder.HEADER).concat(fileText).concat(GenerateFromFolder.FOOTER);
+            return "".concat(SkeletonGenerator.HEADER).concat(fileText).concat(SkeletonGenerator.FOOTER);
         }
         else {
             console.log("Error reading file: ".concat(filePath));
             return "";
         }
     };
-    GenerateFromFolder_Tools.stringfyParams = function (params) {
+    SkeletonGenerator_Tools.stringfyParams = function (params) {
         return "\"".concat(JSON.stringify(params).replace(/"/g, '\\"'), "\"");
     };
-    GenerateFromFolder_Tools.getFilesPaths = function (relativePath, boneFileName, boneWord) {
-        var boneFilePath = path.join(GenerateFromFolder.bonesPath, relativePath, boneFileName);
-        var tempFilePath = path.join(GenerateFromFolder.bonesPath, relativePath, boneFileName.replace(GenerateFromFolder.SKL_EXTENTION, GenerateFromFolder.TEMP_EXTENTION));
+    SkeletonGenerator_Tools.replaceFilePromptLoop = function (rl, fileName, functionToExecute) {
+        var answer = false;
+        rl.question("\"".concat(fileName, "\" already exists. Do you want to replace it? [Y/N] "), function (answerText) {
+            answerText = answerText.toLowerCase();
+            var answerFormat = answerText === "y" ||
+                answerText === "yes" ||
+                answerText === "n" ||
+                answerText === "no";
+            if (answerFormat) {
+                answer = answerText === "y" || answerText === "yes";
+                if (answer)
+                    functionToExecute();
+                return rl.close();
+            }
+            else {
+                answer = SkeletonGenerator_Tools.replaceFilePromptLoop(rl, fileName, functionToExecute);
+            }
+        });
+        return answer;
+    };
+    SkeletonGenerator_Tools.getFilesPaths = function (relativePath, boneFileName, boneWord) {
+        var boneFilePath = path.join(SkeletonGenerator.bonesPath, relativePath, boneFileName);
+        var tempFilePath = path.join(SkeletonGenerator.bonesPath, relativePath, boneFileName.replace(SkeletonGenerator.SKL_EXTENTION, SkeletonGenerator.TEMP_EXTENTION));
         var generatedFilePath = path
-            .join(GenerateFromFolder.distPath, relativePath, boneFileName.replace(GenerateFromFolder.TEMP_EXTENTION, ""))
+            .join(SkeletonGenerator.distPath, relativePath, boneFileName.replace(SkeletonGenerator.TEMP_EXTENTION, ""))
             .replace(/SKELETON/g, boneWord);
         return { boneFilePath: boneFilePath, tempFilePath: tempFilePath, generatedFilePath: generatedFilePath };
     };
-    return GenerateFromFolder_Tools;
-}());
-var GenerateFromFolder = /** @class */ (function () {
-    function GenerateFromFolder() {
-    }
-    GenerateFromFolder.forOneBoneWord = function (boneWord) {
-        console.log("\n".concat(GenerateFromFolder.SPARKS_ICON, " Generating files for \"").concat(boneWord, "\" at \"").concat(GenerateFromFolder.distPath, "\"\n"));
-        GenerateFromFolder.folderIterator(GenerateFromFolder.bonesPath, boneWord);
+    SkeletonGenerator_Tools.replaceFilePrompt = function (fileName, functionToExecute) {
+        var rl = readline.createInterface({
+            input: process.stdin,
+            output: process.stdout
+        });
+        var answer = SkeletonGenerator_Tools.replaceFilePromptLoop(rl, fileName, functionToExecute);
+        return answer;
     };
-    GenerateFromFolder.SPARKS_ICON = "✨";
-    GenerateFromFolder.DIST_WORD = "dist_";
-    GenerateFromFolder.SKL_EXTENTION = "skl.js";
-    GenerateFromFolder.TEMP_EXTENTION = "skltmp.js";
-    GenerateFromFolder.bonesPath = "";
-    GenerateFromFolder.distPath = "";
-    GenerateFromFolder.params = {};
-    GenerateFromFolder.folderIterator = function (rootPath, boneWord, relativePath) {
+    return SkeletonGenerator_Tools;
+}());
+var SkeletonGenerator = /** @class */ (function () {
+    function SkeletonGenerator() {
+    }
+    SkeletonGenerator.forOneBoneWord = function (boneWord) {
+        console.log("\n".concat(SkeletonGenerator.SPARKS_ICON, " Generating files for \"").concat(boneWord, "\" at \"").concat(SkeletonGenerator.distPath, "\"\n"));
+        SkeletonGenerator.folderIterator(SkeletonGenerator.bonesPath, boneWord);
+    };
+    SkeletonGenerator.generateTempFileAndRun = function (tempFilePath, tempFileContent, params) {
+        fs.writeFileSync(tempFilePath, tempFileContent);
+        var command = "node \"".concat(tempFilePath, "\" ").concat(SkeletonGenerator_Tools.stringfyParams(params));
+        var output = (0, child_process_1.execSync)(command, { encoding: "utf-8" });
+        fs.unlinkSync(tempFilePath);
+        console.log(output);
+    };
+    SkeletonGenerator.forRootFile = function (boneWord, paths) {
+        var rootFilePath = "";
+        if (typeof paths === "string") {
+            rootFilePath = paths;
+            SkeletonGenerator.bonesPath = path.dirname(paths);
+            SkeletonGenerator.distPath = path.dirname(paths);
+        }
+        else {
+            rootFilePath = paths.bonesPath;
+            SkeletonGenerator.bonesPath = path.dirname(paths.bonesPath);
+            SkeletonGenerator.distPath = paths.distPath;
+        }
+        if (typeof boneWord === "string") {
+            SkeletonGenerator.fileGenerator("", path.basename(rootFilePath), boneWord);
+        }
+        else {
+            boneWord.forEach(function (bone) {
+                return SkeletonGenerator.fileGenerator("", path.basename(rootFilePath), bone);
+            });
+        }
+    };
+    SkeletonGenerator.SPARKS_ICON = "✨";
+    SkeletonGenerator.DIST_WORD = "dist_";
+    SkeletonGenerator.SKL_EXTENTION = "skl.js";
+    SkeletonGenerator.TEMP_EXTENTION = "skltmp.js";
+    SkeletonGenerator.bonesPath = "";
+    SkeletonGenerator.distPath = "";
+    SkeletonGenerator.params = {};
+    SkeletonGenerator.folderIterator = function (rootPath, boneWord, relativePath) {
         if (relativePath === void 0) { relativePath = ""; }
         fs.readdir(rootPath, function (err, filesAndFolders) {
             if (err) {
@@ -67,32 +128,32 @@ var GenerateFromFolder = /** @class */ (function () {
                 process.exit(1);
             }
             filesAndFolders.forEach(function (fileOrFolderName) {
-                var fileOrFolderPath = path.join(GenerateFromFolder.bonesPath, relativePath, fileOrFolderName);
+                var fileOrFolderPath = path.join(SkeletonGenerator.bonesPath, relativePath, fileOrFolderName);
                 fs.stat(fileOrFolderPath, function (error, fileOrFolder) {
                     if (error) {
                         console.error("Error stating file.", error);
                         return;
                     }
                     if (fileOrFolder.isFile()) {
-                        if (fileOrFolderName.endsWith(GenerateFromFolder.SKL_EXTENTION)) {
-                            GenerateFromFolder.fileGenerator(relativePath, fileOrFolderName, boneWord);
+                        if (fileOrFolderName.endsWith(SkeletonGenerator.SKL_EXTENTION)) {
+                            SkeletonGenerator.fileGenerator(relativePath, fileOrFolderName, boneWord);
                         }
                     }
                     else {
-                        GenerateFromFolder.folderIterator(fileOrFolderPath, boneWord, path.join(relativePath, fileOrFolderName));
+                        SkeletonGenerator.folderIterator(fileOrFolderPath, boneWord, path.join(relativePath, fileOrFolderName));
                     }
                 });
             });
         });
     };
-    GenerateFromFolder.fileGenerator = function (relativePath, boneFileName, boneWord) {
-        var _a = GenerateFromFolder_Tools.getFilesPaths(relativePath, boneFileName, boneWord), boneFilePath = _a.boneFilePath, tempFilePath = _a.tempFilePath, generatedFilePath = _a.generatedFilePath;
-        var tempFileContent = GenerateFromFolder_Tools.getTempFileContent(boneFilePath);
-        var params = __assign(__assign({}, GenerateFromFolder.params), { bone: boneWord, Bone: boneWord.charAt(0).toUpperCase() + boneWord.slice(1), boneFilePath: path.dirname(boneFilePath), boneFileName: path.basename(boneFilePath), tempFilePath: path.dirname(tempFilePath), tempFileName: path.basename(tempFilePath), generatedFilePath: path.dirname(generatedFilePath), generatedFileName: path
+    SkeletonGenerator.fileGenerator = function (relativePath, boneFileName, boneWord) {
+        var _a = SkeletonGenerator_Tools.getFilesPaths(relativePath, boneFileName, boneWord), boneFilePath = _a.boneFilePath, tempFilePath = _a.tempFilePath, generatedFilePath = _a.generatedFilePath;
+        var tempFileContent = SkeletonGenerator_Tools.getTempFileContent(boneFilePath);
+        var params = __assign(__assign({}, SkeletonGenerator.params), { bone: boneWord, Bone: boneWord.charAt(0).toUpperCase() + boneWord.slice(1), boneFilePath: path.dirname(boneFilePath), boneFileName: path.basename(boneFilePath), tempFilePath: path.dirname(tempFilePath), tempFileName: path.basename(tempFilePath), generatedFilePath: path.dirname(generatedFilePath), generatedFileName: path
                 .basename(generatedFilePath)
-                .replace(".".concat(GenerateFromFolder.SKL_EXTENTION), ""), extension: path
+                .replace(".".concat(SkeletonGenerator.SKL_EXTENTION), ""), extension: path
                 .basename(generatedFilePath)
-                .replace(".".concat(GenerateFromFolder.SKL_EXTENTION), "")
+                .replace(".".concat(SkeletonGenerator.SKL_EXTENTION), "")
                 .split(".")
                 .pop() });
         if (fs.existsSync(tempFilePath)) {
@@ -103,34 +164,49 @@ var GenerateFromFolder = /** @class */ (function () {
                 console.error("Error deleting file: ".concat(tempFileContent, ", : ").concat(err));
             }
         }
-        fs.writeFileSync(tempFilePath, tempFileContent);
-        var command = "node \"".concat(tempFilePath, "\" ").concat(GenerateFromFolder_Tools.stringfyParams(params));
-        var output = (0, child_process_1.execSync)(command, { encoding: "utf-8" });
-        fs.unlinkSync(tempFilePath);
-        console.log(output);
+        var finalGeneratedFile = generatedFilePath.replace(".".concat(SkeletonGenerator.SKL_EXTENTION), "");
+        if (fs.existsSync(finalGeneratedFile)) {
+            SkeletonGenerator_Tools.replaceFilePrompt(path.basename(finalGeneratedFile), function () {
+                SkeletonGenerator.generateTempFileAndRun(tempFilePath, tempFileContent, params);
+            });
+        }
+        else
+            SkeletonGenerator.generateTempFileAndRun(tempFilePath, tempFileContent, params);
     };
-    GenerateFromFolder.HEADER = "\"use strict\";\nexports.__esModule = true;\nvar fs = require(\"fs\");\nvar path = require(\"path\");\nvar params = JSON.parse(process.argv[2].replace(/\"/g, '\"'));\nconst folderIcon = \"\uD83D\uDCC2\";\nconst fileIcon = \"\uD83D\uDCC4\";\nconst getFileContent = ";
-    GenerateFromFolder.FOOTER = "\nconst fileContent = getFileContent(params);\nfs.mkdirSync(params.generatedFilePath, { recursive: true });\nfs.writeFileSync(\n  path.join(params.generatedFilePath, params.generatedFileName),\n  fileContent\n);\nconsole.log(`\t ${folderIcon} ${params.generatedFilePath}\n\t  \u2514\u2500${fileIcon} ${params.generatedFileName}`);\n";
-    return GenerateFromFolder;
+    SkeletonGenerator.HEADER = "\"use strict\";\nexports.__esModule = true;\nvar fs = require(\"fs\");\nvar path = require(\"path\");\nvar params = JSON.parse(process.argv[2].replace(/\"/g, '\"'));\nconst folderIcon = \"\uD83D\uDCC2\";\nconst fileIcon = \"\uD83D\uDCC4\";\nconst getFileContent = ";
+    SkeletonGenerator.FOOTER = "\nconst fileContent = getFileContent(params);\nfs.mkdirSync(params.generatedFilePath, { recursive: true });\nfs.writeFileSync(\n  path.join(params.generatedFilePath, params.generatedFileName),\n  fileContent\n);\nconsole.log(`\t ${folderIcon} ${params.generatedFilePath}\n\t  \u2514\u2500${fileIcon} ${params.generatedFileName}`);\n";
+    return SkeletonGenerator;
 }());
 var Skeleton = /** @class */ (function () {
     function Skeleton() {
     }
-    Skeleton.generateFromFolder = function (paths, boneWord, params) {
+    Skeleton.generate = function (paths, boneWord, params) {
         if (params === void 0) { params = {}; }
-        GenerateFromFolder.params = params;
+        SkeletonGenerator.params = params;
         if (typeof paths === "string") {
-            GenerateFromFolder.bonesPath = paths;
-            GenerateFromFolder.distPath = path.join(path.dirname(paths), "".concat(GenerateFromFolder.DIST_WORD).concat(path.basename(paths)));
+            if (paths.endsWith(SkeletonGenerator.SKL_EXTENTION)) {
+                SkeletonGenerator.forRootFile(boneWord, paths);
+                return;
+            }
+            else {
+                SkeletonGenerator.bonesPath = paths;
+                SkeletonGenerator.distPath = path.join(path.dirname(paths), "".concat(SkeletonGenerator.DIST_WORD).concat(path.basename(paths)));
+            }
         }
         else {
-            GenerateFromFolder.bonesPath = paths.bonesPath;
-            GenerateFromFolder.distPath = paths.distPath;
+            if (paths.bonesPath.endsWith(SkeletonGenerator.SKL_EXTENTION)) {
+                SkeletonGenerator.forRootFile(boneWord, paths);
+                return;
+            }
+            else {
+                SkeletonGenerator.bonesPath = paths.bonesPath;
+                SkeletonGenerator.distPath = paths.distPath;
+            }
         }
         if (typeof boneWord === "string")
-            GenerateFromFolder.forOneBoneWord(boneWord);
+            SkeletonGenerator.forOneBoneWord(boneWord);
         else
-            boneWord.forEach(function (bone) { return GenerateFromFolder.forOneBoneWord(bone); });
+            boneWord.forEach(function (bone) { return SkeletonGenerator.forOneBoneWord(bone); });
     };
     return Skeleton;
 }());
