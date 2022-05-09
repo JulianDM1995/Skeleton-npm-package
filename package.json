@@ -1,6 +1,6 @@
 {
   "name": "skeleton-code-generator",
-  "version": "1.1.2",
+  "version": "1.1.3",
   "description": "The most powerfull node-based code generator! Automate the process of generating multiple code files and folder structures fast, efficient and easy. You can use a pre-defined folder structure as parameter for code generation",
   "main": "Skeleton.js",
   "repository": {
